@@ -452,6 +452,9 @@ tbody tr.sess-past:hover{background:transparent;}
     <div class="login-connecting" id="login-status" style="display:none">
       <span class="spinner"></span> Connessione…
     </div>
+    <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
+      VMC 271 — v43 &nbsp;·&nbsp; 07.04.26
+    </div>
   </div>
 </div>
 
@@ -492,7 +495,7 @@ tbody tr.sess-past:hover{background:transparent;}
         <div class="page-title">Sessioni Disponibili</div>
         <div class="page-sub">Tocca una sessione per prenotare</div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="loadSessioni()">↻ Aggiorna</button>
+      <button class="btn btn-primary" style="font-size:.95rem;padding:.55rem 1.8rem;font-weight:600;" onclick="loadSessioni()">↻ Aggiorna</button>
     </div>
     <div id="banner-db" class="banner-warn" style="display:none">
       ⚠️ <span><strong>ATTENZIONE:</strong> il database dipendenti non è aggiornato. Provvedere!</span>
@@ -507,6 +510,9 @@ tbody tr.sess-past:hover{background:transparent;}
         </tbody>
       </table>
     </div>
+    <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
+      VMC 271 — v43 &nbsp;·&nbsp; 7 aprile 2026
+    </div>
   </div>
 
   <!-- PAGINA 2 — RIEPILOGO -->
@@ -516,7 +522,7 @@ tbody tr.sess-past:hover{background:transparent;}
         <div class="page-title">Riepilogo Prenotazioni <span class="count-badge" id="pren-badge" style="display:none">0</span></div>
         <div class="page-sub">Tutte le prenotazioni VMC</div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="loadRiepilogo()">↻ Aggiorna</button>
+      <button class="btn btn-primary" style="font-size:.95rem;padding:.55rem 1.8rem;font-weight:600;" onclick="loadRiepilogo()">↻ Aggiorna</button>
     </div>
     <!-- Slider sessioni -->
     <div class="sess-slider-wrap">
@@ -2148,16 +2154,19 @@ async function modificaPren(id){
   if(!s)return;
   _editPrenId=id;
   // precarica dati nel modal prenotazione
-  selSessioneId=s.id;
+  selSessionId=s.id;
   selSessData=s.Data;
   // apri modal
-  const modal=document.getElementById('modal-prenota');
-  document.getElementById('modal-sess-data').textContent=fmtData(s.Data);
-  document.getElementById('modal-sess-luogo').textContent=s.Luogo;
-  document.getElementById('modal-sess-posti').textContent=s.Posti_Totali-((_prenotazioni.filter(x=>x.sessione_id===s.id).length));
-  document.getElementById('modal-sess-op').textContent=p.operatore;
-  // cerca il marittimo nel DB
-  document.getElementById('mat-input').value=p.matricola_aziendale||'';
+  document.getElementById('mb-data').textContent=fmtData(s.Data);
+  document.getElementById('mb-loc').textContent=s.Luogo;
+  document.getElementById('mb-lib').textContent=Math.max(0,s.Posti_Totali-(_prenotazioni.filter(x=>x.sessione_id===s.id).length));
+  document.getElementById('mb-op').textContent=p.operatore;
+  // modalità modifica: blocca matricola e cerca
+  const matInput=document.getElementById('mat-input');
+  const btnCerca=document.getElementById('btn-cerca');
+  matInput.value=p.matricola_aziendale||'';
+  matInput.disabled=true;
+  if(btnCerca)btnCerca.disabled=true;
   document.getElementById('note-input').value=p.note||'';
   document.getElementById('minor-alert').style.display='none';
   // popola scheda marittimo
@@ -2173,6 +2182,8 @@ async function modificaPren(id){
     mostraScheda(selMarittimo,true);
     if(p.matricola_aziendale) await caricaUltimaVisita(p.matricola_aziendale);
   } else {
+    selMarittimo={matricola_aziendale:p.matricola_aziendale,cognome_nome:p.cognome_nome,qualifica:p.qualifica,data_nascita:p.data_nascita};
+    mostraScheda(selMarittimo,false);
   }
   // seleziona nave
   await buildNaveSelect();
@@ -2199,7 +2210,8 @@ async function salvaPrenotazione(){
       await sbPatch('Prenotazioni',_editPrenId,{note,nave_assegnata:nave,esito_amm:esito});
       toast('✅ Prenotazione aggiornata');
       chiudiPrenota();
-      await loadPrenotazioni();
+      await loadRiepilogo();
+      await loadSessioni();
     }catch(e){toast('Errore: '+e.message,'error');}
     return;
   }
@@ -2211,9 +2223,12 @@ function chiudiPrenota(){
   document.getElementById('modal-overlay').classList.remove('open');
   _editPrenId=null;
   selMarittimo=null;
-  document.getElementById('mat-input').value='';
+  const mi=document.getElementById('mat-input');
+  if(mi){mi.value='';mi.disabled=false;}
+  const bc=document.getElementById('btn-cerca');
+  if(bc)bc.disabled=false;
   document.getElementById('note-input').value='';
-  document.getElementById('scheda-marittimo').style.display='none';
+  document.getElementById('scheda-compact').classList.remove('show');
   document.getElementById('minor-alert').style.display='none';
   const btn=document.getElementById('btn-conferma-pren');
   if(btn){btn.disabled=true;btn.textContent='Conferma prenotazione';}

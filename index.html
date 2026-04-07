@@ -2170,12 +2170,9 @@ async function modificaPren(id){
       qualifica:dip.Qualifica,
       data_nascita:dip.Data_di_Nascita
     };
-    mostraSchedaMarittimo(dip,s);
+    mostraScheda(selMarittimo,true);
+    if(p.matricola_aziendale) await caricaUltimaVisita(p.matricola_aziendale);
   } else {
-    selMarittimo={matricola_aziendale:p.matricola_aziendale,cognome_nome:p.cognome_nome,qualifica:p.qualifica,data_nascita:p.data_nascita};
-    document.getElementById('scheda-marittimo').style.display='block';
-    document.getElementById('scheda-nome').textContent=p.cognome_nome||'—';
-    document.getElementById('scheda-sub').textContent=p.qualifica||'';
   }
   // seleziona nave
   await buildNaveSelect();

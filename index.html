@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VMC — Visita Medico Competente</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root {
+  --bg:#f5f0eb; --surface:#ffffff; --surface2:#ede8e2; --border:#ddd7cf;
+  --text:#2c2416; --muted:#8c7e6e; --accent:#c07840; --accent-l:#faf0e6; --accent-d:#a06030;
+  --green:#4a9e72; --green-l:#e8f5ee; --orange:#d4853a; --orange-l:#fdf0e2;
+  --red:#c85050; --red-l:#faeaea; --amm:#5a6fb8; --amm-l:#eceffe;
+  --shadow:0 2px 14px rgba(44,36,22,.09); --shadow-s:0 1px 4px rgba(44,36,22,.06); --shadow-lg:0 8px 40px rgba(44,36,22,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+
+/* ── SMART SOLUTIONS LOGO ── */
+.smart-banner{background:linear-gradient(120deg,#00c6d7 0%,#0070c0 55%,#003a8c 100%);border-radius:10px;padding:.55rem 1.2rem;display:flex;align-items:center;gap:.7rem;position:relative;overflow:hidden;}
+.smart-banner::before{content:'';position:absolute;left:-10px;top:50%;transform:translateY(-50%);width:40px;height:80px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.2);}
+.smart-banner::after{content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);width:25px;height:55px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);}
+.smart-text{position:relative;z-index:1;text-align:center;}
+.smart-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;color:#fff;letter-spacing:.18em;line-height:1;}
+.smart-sub{font-family:'Plus Jakarta Sans',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.85);margin-top:2px;}
+/* versione header — più piccola */
+.smart-banner-sm{background:linear-gradient(120deg,#00c6d7 0%,#0070c0 55%,#003a8c 100%);border-radius:7px;padding:.28rem .7rem;display:flex;align-items:center;gap:.4rem;position:relative;overflow:hidden;}
+.smart-banner-sm::before{content:'';position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:22px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);}
+.smart-title-sm{font-family:'Cormorant Garamond',serif;font-size:.72rem;font-weight:600;color:#fff;letter-spacing:.15em;line-height:1;position:relative;z-index:1;}
+.smart-sub-sm{font-family:'Plus Jakarta Sans',sans-serif;font-size:.38rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.85);margin-top:1px;position:relative;z-index:1;}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;width:420px;box-shadow:var(--shadow);text-align:center;}
+.login-logo{font-size:1.9rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:4px;}
+.login-logo span{color:var(--accent);}
+.login-sub{color:var(--muted);font-size:0.82rem;margin-bottom:1.5rem;line-height:1.5;}
+.lbl{display:block;text-align:left;font-size:0.71rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+/* griglia bottoni utenti */
+.user-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.2rem;}
+.user-btn{padding:10px 8px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.user-btn:hover{border-color:var(--accent);background:var(--accent-l);color:var(--accent-d);}
+.user-btn.selected{border-color:var(--accent);background:var(--accent);color:#fff;}
+/* admin diretti */
+.admin-direct-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.2rem;}
+.admin-direct-btn{padding:10px 8px;border-radius:10px;border:1.5px solid #c8d0f0;background:var(--amm-l);color:var(--amm);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all .18s;}
+.admin-direct-btn:hover{background:#d8dcf8;border-color:var(--amm);}
+.admin-section-lbl{font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;text-align:left;}
+#pin-wrap{display:none;margin-bottom:1rem;}
+.login-card input[type=password]{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color .2s;margin-bottom:.8rem;}
+.login-card input:focus{border-color:var(--accent);}
+#login-err{color:var(--red);font-size:0.78rem;margin-top:.5rem;display:none;}
+.login-connecting{display:flex;align-items:center;gap:8px;justify-content:center;font-size:.8rem;color:var(--muted);margin-top:.8rem;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 18px;border-radius:9px;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-d);box-shadow:0 3px 10px rgba(192,120,64,.3);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.btn-ghost{background:none;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);}
+.btn-danger{background:var(--red-l);color:var(--red);border:1px solid #f0c4c4;}
+.btn-danger:hover{background:#f5d0d0;}
+.btn-warn{background:var(--orange-l);color:var(--orange);border:1px solid #f5d9b0;}
+.btn-warn:hover{background:#fae0c0;}
+.btn-amm{background:var(--amm-l);color:var(--amm);border:1px solid #c8d0f0;}
+.btn-amm:hover{background:#d8dcf8;}
+.btn-full{width:100%;}
+.btn-sm{padding:5px 12px;font-size:0.75rem;border-radius:7px;}
+.btn-lg{padding:12px 24px;font-size:.9rem;border-radius:12px;}
+
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-s);}
+.logo{font-size:0.95rem;font-weight:800;letter-spacing:-0.02em;display:flex;align-items:center;gap:10px;}
+.logo-chip{background:var(--accent-l);color:var(--accent);font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:0.04em;}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.hdr-user{font-size:0.82rem;color:var(--muted);}
+.hdr-user strong{color:var(--text);}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-l);color:var(--accent);font-size:0.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;}
+.conn-dot.off{background:var(--red);}
+.conn-dot.loading{background:var(--orange);animation:pulse .8s ease-in-out infinite alternate;}
+@keyframes pulse{from{opacity:.4}to{opacity:1}}
+
+/* ── NAV ── */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;gap:2px;}
+.nav-tab{padding:12px 18px;font-size:0.81rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;position:relative;top:1px;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ── MAIN ── */
+main{max-width:960px;margin:0 auto;padding:1.5rem;}
+.page{display:none;}
+.page.active{display:block;}
+.page-hdr{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.4rem;gap:1rem;}
+.page-title{font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;}
+.page-sub{color:var(--muted);font-size:0.8rem;margin-top:4px;line-height:1.5;}
+
+/* ── BANNER AVVISO DB ── */
+.banner-warn{background:var(--orange-l);border:1.5px solid #f5d9b0;border-radius:12px;padding:.8rem 1.2rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:10px;font-size:.82rem;color:#7a4a10;}
+.banner-warn strong{color:var(--orange);}
+
+/* ── SESSIONI TABLE ── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--surface2);}
+th{padding:10px 16px;text-align:left;font-size:0.69rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr.sess-row{cursor:pointer;transition:background .14s;}
+tbody tr.sess-row:hover{background:var(--accent-l);}
+tbody tr.sess-full{cursor:default;opacity:.6;}
+tbody tr.sess-full:hover{background:transparent;}
+tbody tr.sess-past{cursor:default;opacity:.42;filter:grayscale(.4);}
+tbody tr.sess-past:hover{background:transparent;}
+.badge-past{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:middle;}
+.td-data-main{font-weight:700;font-size:0.9rem;}
+.td-data-day{font-size:0.71rem;color:var(--muted);margin-top:2px;text-transform:capitalize;}
+.td-nota-sess{font-size:0.7rem;color:var(--orange);margin-top:3px;font-style:italic;}
+.td-num{font-family:'DM Mono',monospace;font-size:0.9rem;font-weight:600;}
+.liberi-ok{color:var(--green);}
+.liberi-warn{color:var(--orange);}
+.liberi-zero{color:var(--red);}
+.esaurito-label{font-size:0.72rem;color:var(--red);font-weight:600;}
+.empty-row td{text-align:center;padding:3rem;color:var(--muted);}
+
+/* ── SLIDER SESSIONI RIEPILOGO ── */
+.sess-slider-wrap{position:relative;margin-bottom:.9rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.6rem .8rem .4rem;box-shadow:var(--shadow-s);}
+.sess-slider{display:flex;gap:8px;overflow-x:scroll;padding-bottom:.5rem;cursor:grab;
+  scrollbar-width:thin;
+  scrollbar-color:var(--accent) var(--surface2);
+}
+.sess-slider::-webkit-scrollbar{height:5px;}
+.sess-slider::-webkit-scrollbar-track{background:var(--surface2);border-radius:10px;}
+.sess-slider::-webkit-scrollbar-thumb{background:var(--accent);border-radius:10px;}
+.sess-slider::-webkit-scrollbar-thumb:hover{background:var(--accent-d);}
+.sess-slider.dragging{cursor:grabbing;}
+.sess-pill{flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:.4rem .85rem;border-radius:9px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .16s;min-width:88px;}
+.sess-pill:hover{border-color:var(--accent);background:var(--accent-l);}
+.sess-pill.selected{border-color:var(--accent);background:var(--accent);color:#fff;}
+.sess-pill.past{opacity:.45;filter:grayscale(.4);}
+.sess-pill-data{font-size:.76rem;font-weight:800;line-height:1.2;}
+.sess-pill-luogo{font-size:.63rem;font-weight:600;opacity:.75;margin-top:2px;}
+.sess-pill-all{flex-shrink:0;display:flex;align-items:center;padding:.4rem .85rem;border-radius:9px;border:1.5px dashed var(--border);background:var(--bg);cursor:pointer;font-size:.74rem;font-weight:700;color:var(--muted);transition:all .16s;white-space:nowrap;}
+.sess-pill-all:hover{border-color:var(--accent);color:var(--accent);}
+.sess-pill-all.selected{border-color:var(--accent);background:var(--accent-l);color:var(--accent-d);}
+.f-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;}
+.f-inp{flex:1;min-width:180px;padding:8px 13px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;outline:none;}
+.f-sel{padding:8px 28px 8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%238c7e6e' d='M5 7L1 3h8z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-color:var(--surface);}
+.f-inp:focus,.f-sel:focus{border-color:var(--accent);outline:none;}
+.sel-sess-label{font-size:.78rem;color:var(--muted);margin-bottom:.8rem;}
+.sel-sess-label strong{color:var(--accent);}
+
+/* ── RIEPILOGO TABLE ── */
+.riepilogo-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.riepilogo-cols{grid-template-columns:190px 120px 180px 130px 140px 80px;}
+.riepilogo-thead{display:grid;gap:6px;padding:7px 12px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.riepilogo-thead.riepilogo-cols{grid-template-columns:190px 120px 180px 130px 140px 80px;}
+.riepilogo-th{font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.riepilogo-item{border-bottom:1px solid var(--border);}
+.riepilogo-item:last-child{border-bottom:none;}
+.riepilogo-row{display:grid;grid-template-columns:190px 120px 180px 130px 140px 80px;gap:6px;padding:8px 12px;align-items:center;transition:background .12s;}
+.riepilogo-row:hover{background:var(--accent-l);}
+.rc-nome{font-weight:800;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rc-sub{font-size:.71rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rc-cell{font-size:.81rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rc-note{font-size:.76rem;color:var(--orange);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rc-badge{display:inline-block;font-size:.71rem;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap;}
+.rc-badge.amm-idoneo{background:var(--green-l);color:var(--green);}
+.rc-badge.amm-restrizioni{background:#fdf5cc;color:#b89000;}
+.rc-badge.amm-assente{background:var(--red-l);color:var(--red);}
+.rc-badge.amm-non-idoneo{background:var(--surface2);color:#1a1a1a;}
+.rc-badge.amm-pending{background:var(--amm-l);color:var(--amm);font-style:italic;font-weight:400;}
+.rc-sess{font-size:.72rem;color:var(--muted);line-height:1.5;}
+.rc-sess strong{color:var(--text);font-size:.76rem;display:block;}
+.rc-actions{display:flex;gap:3px;justify-content:flex-end;align-items:center;}
+.rc-db-warn{padding:.22rem 12px;font-size:.68rem;color:var(--orange);font-weight:700;background:var(--orange-l);border-top:1px dashed #f5d9b0;}
+.rc-edit-nave{display:none;padding:.5rem 12px;border-top:1px solid var(--border);background:var(--surface2);align-items:center;gap:8px;flex-wrap:wrap;}
+.rc-edit-nave.show{display:flex;}
+.rc-edit-nave select{flex:1;min-width:160px;padding:5px 26px 5px 9px;background:var(--surface);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:600;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%238c7e6e' d='M5 7L1 3h8z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;background-color:var(--surface);}
+@media(max-width:760px){
+  .riepilogo-row,.riepilogo-thead{grid-template-columns:1fr 1fr 1fr 44px;}
+}
+
+/* ── MODAL AVVISO DOPPIA PRENOTAZIONE ── */
+.modal-warn-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);transform:translateY(18px) scale(.97);transition:transform .24s;padding:1.6rem;}
+.modal-overlay.open .modal-warn-box{transform:translateY(0) scale(1);}
+.modal-warn-icon{font-size:2rem;margin-bottom:.6rem;}
+.modal-warn-title{font-size:1rem;font-weight:800;margin-bottom:.5rem;color:var(--orange);}
+.modal-warn-body{font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;}
+.modal-warn-body strong{color:var(--text);}
+.modal-warn-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+/* toggle riapri sessione */
+.toggle-wrap{display:flex;align-items:center;gap:6px;cursor:pointer;}
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:20px;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle input:checked+.toggle-slider{background:var(--green);}
+.toggle input:checked+.toggle-slider:before{transform:translateX(16px);}
+.count-badge{display:inline-flex;align-items:center;background:var(--accent);color:#fff;font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:20px;margin-left:10px;vertical-align:middle;}
+
+/* sessione con email inviata — verde */
+.sess-adm-item.email-inviata{background:#e8f5ee;border-color:#b8dfc8;}
+.sess-email-sent{font-size:.68rem;color:var(--green);font-weight:700;margin-top:3px;}
+/* gestione email destinatari */
+.email-dest-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.6rem 1rem;display:flex;align-items:center;gap:.8rem;margin-bottom:.4rem;}
+.email-dest-tipo{font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:5px;min-width:30px;text-align:center;}
+.email-dest-tipo.tipo-a{background:#d4f0e2;color:#2a7a50;}
+.email-dest-tipo.tipo-cc{background:#d8eaf8;color:#2a58a0;}
+.email-dest-addr{flex:1;font-size:.82rem;font-family:'DM Mono',monospace;}
+/* ── SMART FOOTER FISSO ── */
+#smart-footer{position:fixed;bottom:12px;right:14px;z-index:500;cursor:default;}
+#smart-footer .smart-banner-sm{box-shadow:0 2px 10px rgba(0,100,180,.18);}
+
+/* ── MODAL EMAIL CONVOCAZIONE ── */
+.modal-email{background:var(--surface);border:1px solid var(--border);border-radius:18px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:translateY(18px) scale(.97);transition:transform .24s;display:flex;flex-direction:column;}
+.modal-overlay.open .modal-email{transform:translateY(0) scale(1);}
+.me-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-shrink:0;}
+.me-title{font-size:.95rem;font-weight:800;}
+.me-meta{padding:.8rem 1.5rem;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.78rem;line-height:1.8;flex-shrink:0;}
+.me-meta span{color:var(--muted);}
+.me-meta strong{color:var(--text);}
+.me-body{padding:1rem 1.5rem;flex:1;}
+.me-body-text{font-size:.84rem;margin-bottom:1rem;color:var(--text);}
+.me-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
+.me-table{width:100%;border-collapse:collapse;font-size:.76rem;min-width:1000px;}
+#email-scope table.me-table thead tr th{padding:9px 10px;background:var(--surface2);text-align:center;font-size:.62rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);border-left:none;border-right:none;border-top:none;vertical-align:middle;white-space:nowrap;}
+#email-scope table.me-table tbody tr td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;white-space:nowrap;border-left:none;border-right:none;border-top:none;}
+#email-scope table.me-table tbody tr:last-child td{border-bottom:none;}
+#email-scope table.me-table tbody tr:hover td{background:var(--accent-l);}
+#email-scope table.me-table tbody tr:nth-child(even) td{background:var(--surface2);}
+#email-scope table.me-table tbody tr:nth-child(even):hover td{background:var(--accent-l);}
+.me-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;}
+
+/* ── MODAL ESITO NUMERICO ── */
+.modal-esito{background:var(--surface);border:1px solid var(--border);border-radius:18px;width:100%;max-width:360px;box-shadow:var(--shadow-lg);transform:translateY(18px) scale(.97);transition:transform .24s;padding:1.5rem;}
+.modal-overlay.open .modal-esito{transform:translateY(0) scale(1);}
+.esito-legenda{background:var(--surface2);border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;}
+.esito-legenda-row{display:flex;gap:.5rem;align-items:center;padding:3px 0;font-size:.82rem;}
+.esito-num{font-family:'DM Mono',monospace;font-weight:700;color:var(--accent);min-width:18px;}
+.esito-input-row{display:flex;gap:10px;align-items:center;margin-top:.8rem;}
+.esito-input-row input{flex:1;padding:10px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:700;text-align:center;outline:none;transition:border-color .2s;}
+.esito-input-row input:focus{border-color:var(--accent);background:#fff;}
+
+/* ── INSERIMENTO ESITI ── */
+.esiti-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-s);}
+.esiti-table{width:100%;border-collapse:collapse;}
+.esiti-table th{padding:9px 14px;text-align:left;font-size:.67rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface2);border-bottom:1px solid var(--border);}
+.esiti-table td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:.82rem;}
+.esiti-table tbody tr:last-child td{border-bottom:none;}
+.esiti-table tbody tr:hover{background:var(--accent-l);}
+.esito-sel{width:100%;padding:5px 8px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:600;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%238c7e6e' d='M5 7L1 3h8z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;padding-right:24px;transition:border-color .2s;}
+.esito-sel:focus{border-color:var(--accent);}
+.esiti-save-bar{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+.esiti-counter{font-size:.8rem;color:var(--muted);}
+.esiti-counter strong{color:var(--text);}
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(44,36,22,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;padding:1rem;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-prenota{background:var(--surface);border:1px solid var(--border);border-radius:22px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:translateY(18px) scale(.97);transition:transform .24s;}
+.modal-overlay.open .modal-prenota{transform:translateY(0) scale(1);}
+.modal-band{background:linear-gradient(135deg,#c07840 0%,#a05828 100%);padding:1.3rem 1.8rem 1.1rem;border-radius:22px 22px 0 0;color:#fff;}
+.modal-band-title{font-size:1.05rem;font-weight:800;margin-bottom:.6rem;}
+.modal-band-sess{display:flex;flex-wrap:wrap;gap:1rem;}
+.mbs-item{display:flex;flex-direction:column;gap:2px;}
+.mbs-val{font-size:0.86rem;font-weight:700;}
+.mbs-lbl{font-size:0.65rem;opacity:.75;letter-spacing:.06em;text-transform:uppercase;}
+.modal-body{padding:1.4rem 1.8rem;}
+.field-lbl{font-size:.71rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+.field-req{color:var(--red);margin-left:2px;}
+.matricola-row{display:flex;gap:10px;margin-bottom:1.2rem;}
+.matricola-row input{flex:1;padding:10px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;color:var(--text);font-family:'DM Mono',monospace;font-size:1.05rem;font-weight:500;letter-spacing:.1em;outline:none;transition:border-color .2s;}
+.matricola-row input:focus{border-color:var(--accent);background:#fff;}
+.matricola-row input::placeholder{font-size:.82rem;letter-spacing:0;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;}
+.warn-db{background:var(--orange-l);border:1.5px solid #f5d9b0;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;display:none;}
+.warn-db-title{font-size:.88rem;font-weight:800;color:var(--orange);margin-bottom:.3rem;}
+.warn-db-sub{font-size:.8rem;color:#8a5010;line-height:1.5;}
+/* scheda marittimo */
+.scheda-compact{border-radius:12px;overflow:hidden;margin-bottom:1.2rem;display:none;}
+.scheda-compact.show{display:block;}
+.sc-header{padding:.85rem 1.2rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;}
+.sc-header.known{background:var(--green-l);border:1.5px solid #b8dfc8;border-radius:12px 12px 0 0;}
+.sc-header.unknown{background:var(--orange-l);border:1.5px solid #f5d9b0;border-radius:12px;}
+.sc-nome{font-weight:800;font-size:1rem;}
+.sc-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;align-items:center;}
+.sc-chip{font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:20px;}
+.chip-moby{background:#d4f0e2;color:#2a7a50;}
+.chip-cin{background:#d8eaf8;color:#2a58a0;}
+.chip-gnv{background:#e8e2f8;color:#5040a0;}
+.chip-nave{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+.chip-warn{background:var(--orange-l);color:var(--orange);border:1px solid #f5d9b0;}
+.chip-minor{background:#fce8e8;color:#c85050;border:1px solid #f0c4c4;font-weight:800;}
+.sc-info{font-size:.78rem;color:var(--muted);}
+/* box ultima visita */
+.ultima-visita-box{background:var(--amm-l);border:1.5px solid #c8d0f0;border-radius:0 0 12px 12px;padding:.7rem 1.2rem;display:none;}
+.ultima-visita-box.show{display:block;}
+.uv-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+.uv-item{display:flex;flex-direction:column;gap:1px;}
+.uv-lbl{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--amm);}
+.uv-val{font-size:.82rem;font-weight:700;}
+/* avviso minorenne */
+.minor-alert{background:#fce8e8;border:1.5px solid #f0c4c4;border-radius:10px;padding:.65rem 1rem;margin-bottom:1rem;display:none;font-size:.8rem;color:var(--red);font-weight:700;}
+/* selezione nave */
+.nave-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:0 0 12px 12px;padding:.85rem 1.2rem;margin-bottom:1.2rem;}
+.nave-select{width:100%;padding:9px 32px 9px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:600;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238c7e6e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-color:var(--surface);transition:border-color .2s;}
+.nave-select:focus{border-color:var(--accent);}
+.nave-select.required-err{border-color:var(--red);}
+.section-note{margin-bottom:1.2rem;}
+.section-note label{display:block;font-size:.71rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.section-note textarea{width:100%;padding:9px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;resize:vertical;min-height:60px;outline:none;transition:border-color .2s;}
+.section-note textarea:focus{border-color:var(--accent);}
+.section-amm{background:var(--amm-l);border:1.5px solid #c8d0f0;border-radius:12px;padding:.9rem 1.2rem;margin-bottom:1.2rem;}
+.amm-header{display:flex;align-items:center;gap:8px;margin-bottom:.7rem;}
+.amm-title{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--amm);}
+.amm-lock{font-size:.72rem;color:var(--muted);margin-left:auto;}
+.amm-select{width:100%;padding:8px 32px 8px 13px;background:#fff;border:1.5px solid #c8d0f0;border-radius:9px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;font-weight:600;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a6fb8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-color:#fff;}
+.amm-select:disabled{opacity:.5;cursor:not-allowed;}
+.amm-note-txt{font-size:.71rem;color:var(--muted);margin-top:5px;}
+.modal-footer{padding:.9rem 1.8rem 1.3rem;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
+
+/* ── ADMIN ── */
+.adm-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.2rem;box-shadow:var(--shadow-s);}
+.adm-card-title{font-size:1rem;font-weight:800;margin-bottom:1.2rem;padding-bottom:.9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.adm-nav-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.5rem;}
+.adm-panel{display:none;}
+.adm-panel.active{display:block;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:.71rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+.form-input{padding:9px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s;width:100%;}
+.form-input:focus{border-color:var(--accent);background:#fff;}
+.divider{height:1px;background:var(--border);margin:1.2rem 0;}
+.add-sess-form{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-bottom:1.2rem;}
+.sess-adm-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.6rem;}
+.sess-adm-top{display:grid;grid-template-columns:1fr 140px 110px 100px;align-items:center;gap:1rem;}
+.sess-adm-data{font-weight:800;font-size:.92rem;}
+.sess-adm-sub{font-size:.7rem;color:var(--muted);margin-top:2px;text-transform:capitalize;}
+.sess-adm-luogo{font-size:.82rem;color:var(--muted);text-align:left;}
+.sess-adm-posti{font-family:'DM Mono',monospace;font-weight:700;font-size:.85rem;text-align:center;}
+.sess-adm-posti small{font-size:.65rem;color:var(--muted);font-weight:400;font-family:'Plus Jakarta Sans',sans-serif;}
+.sess-adm-actions{display:flex;gap:6px;justify-content:flex-end;}
+.sess-adm-edit{display:none;margin-top:.9rem;padding-top:.9rem;border-top:1px solid var(--border);}
+.sess-adm-edit.open{display:block;}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem;}
+.edit-nota label{display:block;font-size:.71rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.edit-nota textarea{width:100%;padding:9px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;resize:vertical;min-height:55px;outline:none;margin-bottom:.9rem;}
+.edit-actions{display:flex;gap:8px;justify-content:flex-end;}
+.adm-add-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:1.2rem;flex-wrap:wrap;}
+.adm-add-row .form-input{flex:1;min-width:140px;}
+.adm-list{display:flex;flex-direction:column;gap:.5rem;}
+.adm-list-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.65rem 1rem;display:flex;align-items:center;gap:.8rem;}
+.adm-list-item-name{flex:1;font-weight:600;font-size:.88rem;}
+.adm-list-edit{display:none;margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border);}
+.adm-list-edit.open{display:block;}
+.adm-list-edit-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.adm-list-edit-row .form-input{flex:1;min-width:120px;}
+.societa-select{padding:9px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238c7e6e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;transition:border-color .2s;}
+.societa-select:focus{border-color:var(--accent);background-color:#fff;}
+/* gestione PIN */
+.pin-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin-bottom:.6rem;display:flex;align-items:center;gap:1rem;}
+.pin-name{flex:1;font-weight:700;font-size:.9rem;}
+.pin-val{font-family:'DM Mono',monospace;font-size:.9rem;color:var(--amm);font-weight:700;letter-spacing:.1em;}
+.pin-edit{display:none;margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border);}
+.pin-edit.open{display:block;}
+.pin-edit-row{display:flex;gap:8px;align-items:center;}
+.pin-edit-row input{flex:1;padding:8px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:.95rem;letter-spacing:.1em;outline:none;transition:border-color .2s;}
+.pin-edit-row input:focus{border-color:var(--accent);}
+
+/* spinner / empty / toast */
+.spinner{width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);}
+.empty-ico{font-size:2rem;margin-bottom:.6rem;}
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:var(--text);color:#fff;border-radius:12px;padding:11px 18px;font-size:.84rem;max-width:320px;transform:translateY(10px);opacity:0;transition:all .25s;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.18);}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.error{background:var(--red);}
+
+@media(max-width:680px){
+  main{padding:1rem;}
+  header,nav{padding:0 1rem;}
+  .add-sess-form{grid-template-columns:1fr;}
+  .edit-grid{grid-template-columns:1fr;}
+  .matricola-row{flex-direction:column;}
+  .modal-body{padding:1.1rem;}
+  .modal-footer{padding:.8rem 1.1rem;}
+  .bk-top{flex-wrap:wrap;}
+  .bk-sess-box{text-align:left;}
+  .adm-add-row{flex-direction:column;}
+  .user-grid,.admin-direct-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="smart-banner" style="margin-bottom:1.2rem">
+      <div class="smart-text" style="flex:1">
+        <div class="smart-title">S.M.A.R.T</div>
+        <div class="smart-sub">Solutions</div>
+      </div>
+    </div>
+    <div class="login-logo">VMC <span>271</span></div>
+    <div class="login-sub">Visita Medico Competente — Sistema prenotazioni</div>
+
+    <div class="lbl">Seleziona il tuo nome</div>
+    <div class="user-grid" id="user-grid"></div>
+
+    <div class="admin-section-lbl" style="margin-top:.4rem">Accesso amministratore</div>
+    <div class="admin-direct-grid" id="admin-direct-grid"></div>
+
+    <div id="pin-wrap">
+      <label class="lbl" id="pin-label">PIN</label>
+      <input type="password" id="pin-input" maxlength="6" placeholder="• • • • • •"
+        oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="off"
+        onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="btn btn-primary btn-full" id="btn-login" onclick="doLogin()">Accedi</button>
+    </div>
+
+    <div id="login-err" style="color:var(--red);font-size:.78rem;margin-top:.5rem;display:none;"></div>
+    <div class="login-connecting" id="login-status" style="display:none">
+      <span class="spinner"></span> Connessione…
+    </div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header id="app-header" style="display:none">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="smart-banner-sm">
+      <div style="position:relative;z-index:1;text-align:center">
+        <div class="smart-title-sm">S.M.A.R.T</div>
+        <div class="smart-sub-sm">Solutions</div>
+      </div>
+    </div>
+    <div style="width:1px;height:24px;background:var(--border)"></div>
+    <div class="logo"><span class="logo-chip">VMC 271</span> Visita Medico Competente</div>
+  </div>
+  <div class="hdr-right">
+    <span title="Supabase"><span class="conn-dot loading" id="conn-dot"></span></span>
+    <span class="hdr-user">Ciao, <strong id="hdr-name"></strong></span>
+    <div class="avatar" id="hdr-av"></div>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Esci</button>
+  </div>
+</header>
+
+<!-- ══ NAV ══ -->
+<nav id="app-nav" style="display:none">
+  <button class="nav-tab active" onclick="showPage('sessioni',this)">Sessioni</button>
+  <button class="nav-tab" onclick="showPage('riepilogo',this)">Riepilogo</button>
+  <button class="nav-tab admin-only" style="display:none" onclick="showPage('admin',this)">Admin</button>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main id="app-main" style="display:none">
+
+  <!-- PAGINA 1 — SESSIONI -->
+  <div class="page active" id="page-sessioni">
+    <div class="page-hdr">
+      <div>
+        <div class="page-title">Sessioni Disponibili</div>
+        <div class="page-sub">Tocca una sessione per prenotare</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadSessioni()">↻ Aggiorna</button>
+    </div>
+    <div id="banner-db" class="banner-warn" style="display:none">
+      ⚠️ <span><strong>ATTENZIONE:</strong> il database dipendenti non è aggiornato. Provvedere!</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Data sessione</th><th>Luogo</th><th>Posti totali</th><th>Posti liberi</th>
+        </tr></thead>
+        <tbody id="sess-tbody">
+          <tr class="empty-row"><td colspan="4"><span class="spinner"></span> Caricamento…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAGINA 2 — RIEPILOGO -->
+  <div class="page" id="page-riepilogo">
+    <div class="page-hdr">
+      <div>
+        <div class="page-title">Riepilogo Prenotazioni <span class="count-badge" id="pren-badge" style="display:none">0</span></div>
+        <div class="page-sub">Tutte le prenotazioni VMC</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadRiepilogo()">↻ Aggiorna</button>
+    </div>
+    <!-- Slider sessioni -->
+    <div class="sess-slider-wrap">
+      <div class="sess-slider" id="sess-slider"></div>
+    </div>
+    <div class="sel-sess-label" id="sel-sess-label" style="font-size:.75rem;color:var(--muted);margin-bottom:.8rem;">Tutte le sessioni</div>
+    <!-- Filtri -->
+    <div class="f-row">
+      <select class="f-sel" id="f-op" onchange="renderRiepilogo()"><option value="">Tutti gli operatori</option></select>
+      <input class="f-inp" id="f-q" type="text" placeholder="Cerca nome o matricola…" oninput="renderRiepilogo()">
+    </div>
+    <div id="riepilogo-list"><div class="empty"><span class="spinner"></span></div></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="page" id="page-admin">
+    <div class="page-hdr">
+      <div><div class="page-title">Pannello Admin</div>
+      <div class="page-sub">Gestione VMC 271</div></div>
+    </div>
+    <div class="adm-nav-btns">
+      <button class="btn btn-primary btn-lg" onclick="showAdmPanel('sessioni')">📅 Sessioni VMC</button>
+      <button class="btn btn-ghost btn-lg" onclick="showAdmPanel('esiti')">✅ Inserimento Esiti</button>
+      <button class="btn btn-ghost btn-lg" onclick="showAdmPanel('navi')">🚢 Gestione Navi</button>
+      <button class="btn btn-ghost btn-lg" onclick="showAdmPanel('luoghi')">📍 Gestione Luoghi</button>
+      <button class="btn btn-ghost btn-lg" onclick="showAdmPanel('email')">📧 Gestione Email</button>
+      <button class="btn btn-ghost btn-lg" onclick="showAdmPanel('pin')">🔑 Gestione PIN</button>
+    </div>
+
+    <!-- panel sessioni -->
+    <div class="adm-panel active" id="adm-panel-sessioni">
+      <div class="adm-card">
+        <div class="adm-card-title">📅 Nuova sessione VMC</div>
+        <div class="add-sess-form">
+          <div class="form-group"><label>Data</label><input class="form-input" type="date" id="ns-data"></div>
+          <div class="form-group"><label>Luogo</label>
+            <select class="form-input" id="ns-loc" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238c7e6e' d='M6 8L1 3h10z'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 12px center;background-color:var(--bg);padding-right:32px">
+              <option value="">— seleziona —</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Posti</label><input class="form-input" type="number" id="ns-posti" min="1" max="200" placeholder="20"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-primary" onclick="addSessione()" style="height:40px;padding:0 18px">＋ Aggiungi</button></div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+          <div style="font-size:.88rem;font-weight:700">Sessioni inserite</div>
+          <div id="sess-count" style="font-size:.75rem;color:var(--muted)"></div>
+        </div>
+        <div id="adm-sess-list"></div>
+      </div>
+    </div>
+
+    <!-- panel inserimento esiti -->
+    <div class="adm-panel" id="adm-panel-esiti">
+      <div class="adm-card">
+        <div class="adm-card-title">✅ Inserimento Esiti</div>
+        <!-- legenda orizzontale -->
+        <div style="display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--surface2);border-radius:8px;padding:.5rem .9rem;margin-bottom:1rem;font-size:.78rem;">
+          <span style="font-weight:700;color:var(--muted);margin-right:4px">Legenda:</span>
+          <span><b style="color:var(--accent)">1</b> In attesa</span>
+          <span><b style="color:var(--accent)">2</b> Idoneo</span>
+          <span><b style="color:var(--accent)">3</b> Idoneo con prescrizioni</span>
+          <span><b style="color:var(--accent)">4</b> Non idoneo</span>
+          <span><b style="color:var(--accent)">5</b> Assente</span>
+          <span><b style="color:var(--accent)">6</b> Rinviato</span>
+        </div>
+        <!-- ricerca nominativo -->
+        <div style="margin-bottom:1rem;">
+          <input class="form-input" type="text" id="esiti-search" placeholder="🔍 Cerca nome o matricola per modificare esito già dato…" oninput="renderAdminEsiti()" style="max-width:500px">
+        </div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem">Mostrati solo i dipendenti <strong>In attesa</strong>. Per modificare un esito già inserito usa la ricerca.</p>
+        <div id="esiti-list-wrap">
+          <div class="empty"><span class="spinner"></span></div>
+        </div>
+        <div class="esiti-save-bar" id="esiti-save-bar" style="display:none">
+          <div class="esiti-counter">Prenotazioni: <strong id="esiti-count">0</strong></div>
+          <button class="btn btn-primary" onclick="salvaEsiti()">💾 Salva tutti gli esiti</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- panel navi -->
+    <div class="adm-panel" id="adm-panel-navi">
+      <div class="adm-card">
+        <div class="adm-card-title">🚢 Gestione Navi</div>
+        <div class="adm-add-row">
+          <div class="form-group" style="flex:1.5"><label>Nome nave</label><input class="form-input" type="text" id="nn-nome" placeholder="es. MOBY WONDER"></div>
+          <div class="form-group"><label>Società</label>
+            <select class="societa-select" id="nn-soc">
+              <option value="">— soc —</option>
+              <option value="MOBY">MOBY</option><option value="CIN">CIN</option><option value="GNV">GNV</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="addNave()" style="height:40px;padding:0 16px;align-self:flex-end">＋</button>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:.8rem">
+          <div style="font-size:.88rem;font-weight:700">Navi registrate</div>
+          <div id="navi-count" style="font-size:.75rem;color:var(--muted)"></div>
+        </div>
+        <div id="adm-navi-list"></div>
+      </div>
+    </div>
+
+    <!-- panel luoghi -->
+    <div class="adm-panel" id="adm-panel-luoghi">
+      <div class="adm-card">
+        <div class="adm-card-title">📍 Gestione Luoghi</div>
+        <div class="adm-add-row">
+          <div class="form-group" style="flex:1"><label>Nome luogo</label>
+            <input class="form-input" type="text" id="nl-nome" placeholder="es. Palermo" onkeydown="if(event.key==='Enter')addLuogo()">
+          </div>
+          <button class="btn btn-primary" onclick="addLuogo()" style="height:40px;padding:0 16px;align-self:flex-end">＋</button>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:.8rem">
+          <div style="font-size:.88rem;font-weight:700">Luoghi disponibili</div>
+          <div id="luoghi-count" style="font-size:.75rem;color:var(--muted)"></div>
+        </div>
+        <div id="adm-luoghi-list"></div>
+      </div>
+    </div>
+
+    <!-- panel gestione email -->
+    <div class="adm-panel" id="adm-panel-email">
+      <div class="adm-card">
+        <div class="adm-card-title">📧 Gestione Destinatari Email</div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem">Gestisci i destinatari delle email di convocazione. Il primo indirizzo in <strong>A:</strong> è il destinatario principale.</p>
+        <!-- aggiungi destinatario -->
+        <div class="adm-add-row">
+          <div class="form-group">
+            <label>Tipo</label>
+            <select class="societa-select" id="ne-tipo">
+              <option value="A">A:</option>
+              <option value="CC">CC:</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Indirizzo email</label>
+            <input class="form-input" type="email" id="ne-email" placeholder="es. nome@azienda.it"
+              onkeydown="if(event.key==='Enter')addEmailDest()">
+          </div>
+          <button class="btn btn-primary" onclick="addEmailDest()" style="height:40px;padding:0 16px;align-self:flex-end">＋ Aggiungi</button>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:.8rem">
+          <div style="font-size:.88rem;font-weight:700">Destinatari configurati</div>
+          <div id="email-dest-count" style="font-size:.75rem;color:var(--muted)"></div>
+        </div>
+        <div id="adm-email-list"></div>
+      </div>
+    </div>
+
+    <!-- panel PIN -->
+    <div class="adm-panel" id="adm-panel-pin">
+      <div class="adm-card">
+        <div class="adm-card-title">🔑 Gestione PIN</div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem">I PIN admin permettono l'accesso diretto come amministratore. Modificali con cautela.</p>
+        <div id="adm-pin-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /page-admin -->
+</main>
+
+<!-- ══ MODAL PRENOTAZIONE ══ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-prenota">
+    <div class="modal-band">
+      <div class="modal-band-title">Prenota marittimo — VMC 271</div>
+      <div class="modal-band-sess">
+        <div class="mbs-item"><div class="mbs-val" id="mb-data">—</div><div class="mbs-lbl">Data</div></div>
+        <div class="mbs-item"><div class="mbs-val" id="mb-loc">—</div><div class="mbs-lbl">Luogo</div></div>
+        <div class="mbs-item"><div class="mbs-val" id="mb-lib">—</div><div class="mbs-lbl">Posti liberi</div></div>
+        <div class="mbs-item"><div class="mbs-val" id="mb-op">—</div><div class="mbs-lbl">Operatore</div></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <label class="field-lbl">Matricola aziendale</label>
+      <div class="matricola-row">
+        <input type="text" id="mat-input" placeholder="es. 10001"
+          oninput="this.value=this.value.replace(/\D/g,'')"
+          onkeydown="if(event.key==='Enter') cercaMarittimo()">
+        <button class="btn btn-primary" id="btn-cerca" onclick="cercaMarittimo()">Cerca</button>
+      </div>
+      <div class="warn-db" id="warn-db">
+        <div class="warn-db-title">⚠️ Matricola non trovata nel database</div>
+        <div class="warn-db-sub">Il database potrebbe non essere aggiornato. Puoi comunque <strong>riservare il posto</strong>.</div>
+        <button class="btn btn-warn btn-sm" style="margin-top:.8rem" onclick="prenotaSconosciuto()">Riserva il posto</button>
+      </div>
+      <!-- avviso minorenne -->
+      <div class="minor-alert" id="minor-alert">⚠️ ATTENZIONE — Dipendente MINORENNE alla data della visita</div>
+      <!-- scheda -->
+      <div class="scheda-compact" id="scheda-compact">
+        <div class="sc-header" id="sc-header">
+          <div style="flex:1">
+            <div class="sc-nome" id="sc-nome">—</div>
+            <div class="sc-row" id="sc-row"></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="resetScheda()">✕</button>
+        </div>
+        <!-- ultima visita -->
+        <div class="ultima-visita-box" id="ultima-visita-box">
+          <div style="font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--amm);margin-bottom:.4rem">Ultima visita effettuata</div>
+          <div class="uv-row" id="uv-row"></div>
+        </div>
+        <!-- selezione nave -->
+        <div class="nave-box" id="nave-box" style="display:none">
+          <label class="field-lbl" style="margin-bottom:6px">Nave / Unità <span class="field-req">*</span></label>
+          <select class="nave-select" id="nave-select"><option value="">— seleziona la nave —</option></select>
+        </div>
+      </div>
+      <div class="section-note" id="section-note" style="display:none">
+        <label>Note <span style="font-weight:400;color:var(--muted)">(opzionale)</span></label>
+        <textarea id="note-input" placeholder="Eventuali note…" maxlength="30"></textarea>
+      </div>
+      <div class="section-amm" id="section-amm" style="display:none">
+        <div class="amm-header">
+          <span>🔒</span><span class="amm-title">Esito AMM</span>
+          <span class="amm-lock" id="amm-lock-msg">Riservato all'amministratore</span>
+        </div>
+        <select class="amm-select" id="amm-select" disabled>
+          <option value="In attesa">— In attesa di visita —</option>
+          <option value="Idoneo">✅ Idoneo</option>
+          <option value="Idoneo con prescrizioni">✅ Idoneo con prescrizioni</option>
+          <option value="Non idoneo">❌ Non idoneo</option>
+          <option value="Assente">⚠️ Assente</option>
+          <option value="Rinviato">🔄 Rinviato</option>
+        </select>
+        <div class="amm-note-txt" id="amm-note-txt">L'esito può essere inserito solo dall'amministratore.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="chiudiPrenota()">Annulla</button>
+      <button class="btn btn-primary" id="btn-conferma-pren" onclick="salvaPrenotazione()" disabled>Conferma prenotazione</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL EMAIL CONVOCAZIONE ══ -->
+<div class="modal-overlay" id="modal-email-overlay">
+  <div class="modal-email">
+    <div class="me-header">
+      <div class="me-title">📧 Email Convocazione</div>
+      <button class="btn btn-ghost btn-sm" onclick="chiudiModalEmail()">✕ Chiudi</button>
+    </div>
+    <div class="me-meta">
+      <div><span>A: </span><strong id="me-to">—</strong></div>
+      <div><span>CC: </span><strong id="me-cc-list">—</strong></div>
+      <div><span>Oggetto: </span><strong id="me-oggetto">—</strong></div>
+    </div>
+    <div class="me-body">
+      <div class="me-body-text">Buongiorno,<br>Vi inviamo quanto in oggetto.</div>
+      <div class="me-table-wrap" id="email-scope">
+        <table class="me-table">
+          <thead>
+            <tr>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Matr. Az.</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Utente</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Nave</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Società</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Note</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Corso 351/353</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Cognome e Nome</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Qualifica</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Compartimento</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Matricola</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Luogo Nascita</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Data Nascita</th>
+              <th style="text-align:center;padding:9px 12px;white-space:nowrap">Telefono</th>
+            </tr>
+          </thead>
+          <tbody id="me-tbody"><tr><td colspan="13" style="text-align:center;padding:1rem"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="me-footer">
+      <button class="btn btn-ghost" onclick="chiudiModalEmail()">Chiudi</button>
+      <button class="btn btn-primary" onclick="invioEmail()" id="me-invia-btn">📧 Genera PDF e Invia</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL AVVISO DOPPIA PRENOTAZIONE ══ -->
+<div class="modal-overlay" id="modal-warn-overlay">
+  <div class="modal-warn-box">
+    <div class="modal-warn-icon">⚠️</div>
+    <div class="modal-warn-title">Prenotazione recente rilevata</div>
+    <div class="modal-warn-body" id="warn-body">—</div>
+    <div class="modal-warn-actions">
+      <button class="btn btn-ghost" onclick="chiudiWarn()">Annulla</button>
+      <button class="btn btn-warn" onclick="proceediComunque()">Procedi comunque</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ESITO NUMERICO ══ -->
+<div class="modal-overlay" id="modal-esito-overlay">
+  <div class="modal-esito">
+    <div style="font-size:.9rem;font-weight:800;margin-bottom:1rem">Modifica Esito AMM</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">Per: <strong id="me-nome">—</strong></div>
+    <div class="esito-legenda">
+      <div class="esito-legenda-row"><span class="esito-num">1</span> In attesa</div>
+      <div class="esito-legenda-row"><span class="esito-num">2</span> Idoneo</div>
+      <div class="esito-legenda-row"><span class="esito-num">3</span> Idoneo con prescrizioni</div>
+      <div class="esito-legenda-row"><span class="esito-num">4</span> Non idoneo</div>
+      <div class="esito-legenda-row"><span class="esito-num">5</span> Assente</div>
+      <div class="esito-legenda-row"><span class="esito-num">6</span> Rinviato</div>
+    </div>
+    <div class="esito-input-row">
+      <input type="number" id="me-input" min="1" max="6" placeholder="1–6"
+        onkeydown="if(event.key==='Enter') confermaEsito()">
+      <button class="btn btn-primary" onclick="confermaEsito()">Conferma</button>
+      <button class="btn btn-ghost" onclick="chiudiModalEsito()">✕</button>
+    </div>
+    <div id="me-err" style="color:var(--red);font-size:.75rem;margin-top:.6rem;display:none">Inserisci un numero da 1 a 6</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══ SUPABASE ══════════════════════════════════════
+const SB_URL='https://rifezqqkbkxdxtexiyhb.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpZmV6cXFrYmt4ZHh0ZXhpeWhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMzUwNzQsImV4cCI6MjA5MDYxMTA3NH0.ILFoQbwLJ4zM7ch2-0MhMzlLCTOL8frZRu61aMdeZdA';
+const HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+async function sbGet(t,p=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${p}`,{headers:HDR});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbPost(t,b){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:HDR,body:JSON.stringify(b)});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbPatch(t,id,b){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:HDR,body:JSON.stringify(b)});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbDelete(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:HDR});if(!r.ok)throw new Error(await r.text());}
+async function sbUpsert(t,b,onConflict){const r=await fetch(`${SB_URL}/rest/v1/${t}?on_conflict=${onConflict}`,{method:'POST',headers:{...HDR,'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(b)});if(!r.ok)throw new Error(await r.text());return r.json();}
+
+// ══ CONFIG ════════════════════════════════════════
+// Utenti normali
+const USERS_NORMAL=["D'iseppi M.","Farina R.","Giglio P.","Guiggi E.","Sabatini A.","Voliani L."];
+// Admin diretti (PIN proprio)
+let ADMIN_USERS=[
+  {name:'Troiani R.',  pin:'2421'},
+  {name:'Ponticelli S.', pin:'2421'}
+];
+// PIN admin generico (per "Accesso amministratore")
+let ADMIN_PIN='2421';
+const ESITI=['In attesa','Idoneo','Idoneo con prescrizioni','Non idoneo','Assente','Rinviato'];
+
+let currentUser=null,isAdmin=false;
+let selSessionId=null,selMarittimo=null,selMatricola=null,selSessData=null;
+let _sessioni=[],_prenotazioni=[],_navi=[],_luoghi=[];
+let _pendingAdminUser=null; // utente admin diretto selezionato
+
+// ══ LOGIN — COSTRUISCI GRIGLIA ════════════════════
+function buildLoginGrid(){
+  // utenti normali
+  const ug=document.getElementById('user-grid');
+  ug.innerHTML=USERS_NORMAL.map(u=>
+    `<button class="user-btn" onclick="selectUser('${u.replace(/'/g,"\\'")}',this)">${u}</button>`
+  ).join('');
+  // admin diretti
+  const ag=document.getElementById('admin-direct-grid');
+  ag.innerHTML=ADMIN_USERS.map(u=>
+    `<button class="admin-direct-btn" onclick="selectAdminDirect('${u.name.replace(/'/g,"\\'")}',this)">${u.name}</button>`
+  ).join('');
+}
+
+function selectUser(name,btn){
+  // deseleziona tutto
+  document.querySelectorAll('.user-btn,.admin-direct-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  _pendingAdminUser=null;
+  document.getElementById('pin-wrap').style.display='none';
+  document.getElementById('login-err').style.display='none';
+  // login diretto senza PIN
+  currentUser=name; isAdmin=false;
+  doLogin();
+}
+
+function selectAdminDirect(name,btn){
+  document.querySelectorAll('.user-btn,.admin-direct-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  _pendingAdminUser=name;
+  document.getElementById('pin-label').textContent='PIN per '+name;
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-wrap').style.display='block';
+  document.getElementById('login-err').style.display='none';
+  setTimeout(()=>document.getElementById('pin-input').focus(),100);
+}
+
+async function doLogin(){
+  const err=document.getElementById('login-err'); err.style.display='none';
+  // se è admin diretto — verifica PIN
+  if(_pendingAdminUser){
+    const pin=document.getElementById('pin-input').value;
+    const adminUser=ADMIN_USERS.find(u=>u.name===_pendingAdminUser);
+    if(!adminUser||pin!==adminUser.pin){err.textContent='PIN errato.';err.style.display='block';return;}
+    currentUser=_pendingAdminUser; isAdmin=true;
+  }
+  // se currentUser non è impostato (click su btn senza selezione)
+  if(!currentUser){err.textContent='Seleziona il tuo nome.';err.style.display='block';return;}
+  const btn=document.getElementById('btn-login');
+  if(btn)btn.disabled=true;
+  document.getElementById('login-status').style.display='flex';
+  try{await initApp();}
+  catch(e){
+    err.textContent='Errore connessione: '+e.message;err.style.display='block';
+    if(btn)btn.disabled=false;
+    document.getElementById('login-status').style.display='none';
+    currentUser=null;isAdmin=false;
+  }
+}
+
+async function initApp(){
+  [_navi,_luoghi]=await Promise.all([
+    sbGet('Navi','order=Societa,Nome_Nave'),
+    sbGet('Luoghi','order=nome')
+  ]);
+  // carica destinatari email
+  await aggiornaDestinatariEmail();
+  buildNaveSelect();
+  fillLuoghiSelects();
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-header').style.display='flex';
+  document.getElementById('app-nav').style.display='flex';
+  document.getElementById('app-main').style.display='block';
+  document.getElementById('hdr-name').textContent=currentUser;
+  document.getElementById('hdr-av').textContent=currentUser.split(/[\s']+/).map(w=>w[0]).filter(Boolean).join('').slice(0,2).toUpperCase();
+  // tab Admin visibile solo a Troiani e Ponticelli
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+  const canAdmin=ADMIN_USERS.some(u=>u.name===currentUser);
+  if(canAdmin)document.querySelectorAll('.admin-only').forEach(el=>el.style.display='');
+  setConnDot('on');
+  await loadSessioni();
+  // sincronizzazione automatica prenotazioni con DB dipendenti
+  sincronizzaPrenotazioni();
+}
+
+function doLogout(){
+  currentUser=null;isAdmin=false;_pendingAdminUser=null;
+  _sessioni=[];_prenotazioni=[];_navi=[];_luoghi=[];
+  // nascondi sempre elementi admin al logout
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+  document.getElementById('login-screen').style.display='flex';
+  ['app-header','app-nav','app-main'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('pin-wrap').style.display='none';
+  document.getElementById('pin-input').value='';
+  document.getElementById('login-err').style.display='none';
+  document.getElementById('login-status').style.display='none';
+  document.querySelectorAll('.user-btn,.admin-direct-btn').forEach(b=>b.classList.remove('selected'));
+  buildLoginGrid();
+}
+
+function setConnDot(s){const d=document.getElementById('conn-dot');d.className='conn-dot'+(s==='on'?'':s==='off'?' off':' loading');}
+
+// ══ HELPERS ═══════════════════════════════════════
+function fmtData(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'});}
+function fmtGiorno(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('it-IT',{weekday:'long'});}
+function fmtDob(d){if(!d)return'—';const dt=new Date(d+'T00:00:00');return isNaN(dt)?'—':dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function isPassata(d,riaperta){if(riaperta)return false;if(!d)return false;const o=new Date();o.setHours(0,0,0,0);return new Date(d+'T00:00:00')<o;}
+function isMinorenne(dobStr,visitaDateStr){
+  if(!dobStr||!visitaDateStr)return false;
+  const dob=new Date(dobStr+'T00:00:00');
+  const vis=new Date(visitaDateStr+'T00:00:00');
+  if(isNaN(dob)||isNaN(vis))return false;
+  const age=vis.getFullYear()-dob.getFullYear();
+  const m=vis.getMonth()-dob.getMonth();
+  return age<18||(age===18&&(m<0||(m===0&&vis.getDate()<dob.getDate())));
+}
+
+// ══ SELECTS ═══════════════════════════════════════
+function buildNaveSelect(){
+  const sel=document.getElementById('nave-select');
+  sel.innerHTML='<option value="">— seleziona la nave —</option>';
+  const gruppi={};
+  _navi.forEach(n=>{if(!gruppi[n.Societa])gruppi[n.Societa]=[];gruppi[n.Societa].push(n.Nome_Nave);});
+  Object.keys(gruppi).sort().forEach(soc=>{
+    const og=document.createElement('optgroup');og.label=soc;
+    gruppi[soc].forEach(nome=>{const o=document.createElement('option');o.value=nome;o.textContent=nome;og.appendChild(o);});
+    sel.appendChild(og);
+  });
+  const opt=document.createElement('option');opt.value='SCELGO_DOPO';opt.textContent='— Scelgo dopo —';
+  sel.appendChild(opt);
+}
+function fillLuoghiSelects(){
+  ['ns-loc'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— seleziona —</option>'+_luoghi.map(l=>`<option value="${l.nome}">${l.nome}</option>`).join('');
+    if(_luoghi.find(l=>l.nome===cur))sel.value=cur;
+  });
+}
+
+// ══ NAV ═══════════════════════════════════════════
+async function showPage(id,tab){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  tab.classList.add('active');
+  if(id==='sessioni')  await loadSessioni();
+  if(id==='riepilogo') await loadRiepilogo();
+  if(id==='admin')     await loadAdmin();
+}
+function showAdmPanel(id){
+  document.querySelectorAll('.adm-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('adm-panel-'+id).classList.add('active');
+  document.querySelectorAll('.adm-nav-btns .btn').forEach(b=>b.classList.replace('btn-primary','btn-ghost')||b.classList.remove('btn-primary'));
+  event.currentTarget.classList.replace('btn-ghost','btn-primary');
+}
+
+// ══ TOAST ═════════════════════════════════════════
+let _tt;
+function toast(msg,type=''){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+type;clearTimeout(_tt);_tt=setTimeout(()=>el.className='',3500);}
+
+// ══ PAGINA 1 — SESSIONI ═══════════════════════════
+async function loadSessioni(){
+  setConnDot('loading');
+  try{
+    _sessioni=await sbGet('Sessioni','order=Data');
+    _prenotazioni=await sbGet('Prenotazioni','select=id,sessione_id,db_aggiornare');
+    renderSessioni();
+    // banner DB
+    const hasDirty=_prenotazioni.some(p=>p.db_aggiornare);
+    document.getElementById('banner-db').style.display=hasDirty?'flex':'none';
+    setConnDot('on');
+  }catch(e){
+    setConnDot('off');
+    document.getElementById('sess-tbody').innerHTML=`<tr class="empty-row"><td colspan="4">⚠️ Errore: ${e.message}</td></tr>`;
+  }
+}
+function renderSessioni(){
+  const tbody=document.getElementById('sess-tbody');
+  const sessioni=[..._sessioni].sort((a,b)=>a.Data.localeCompare(b.Data));
+  if(!sessioni.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="4">Nessuna sessione disponibile.</td></tr>`;return;}
+  tbody.innerHTML=sessioni.map(s=>{
+    const cnt=_prenotazioni.filter(p=>p.sessione_id===s.id).length;
+    const liberi=Math.max(0,(s.Posti_Totali||0)-cnt);
+    const past=isPassata(s.Data,s.riaperta);
+    const isFull=liberi===0;
+    const libCls=isFull?'liberi-zero':liberi<=3?'liberi-warn':'liberi-ok';
+    let trCls,click;
+    if(past){trCls='sess-past';click='';}
+    else if(isFull){trCls='sess-full';click='';}
+    else{trCls='sess-row';click=` onclick="apriPrenota(${s.id})"` ;}
+    return `<tr class="${trCls}"${click}>
+      <td><div class="td-data-main">${fmtData(s.Data)}${past?`<span class="badge-past">Conclusa</span>`:''}</div><div class="td-data-day">${fmtGiorno(s.Data)}</div>${s.Nota?`<div class="td-nota-sess">📌 ${s.Nota}</div>`:''}</td>
+      <td>${s.Luogo||'—'}</td>
+      <td class="td-num">${s.Posti_Totali}</td>
+      <td class="td-num ${libCls}">${liberi}${!past&&isFull?' <span class="esaurito-label">Esaurito</span>':''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══ MODAL ═════════════════════════════════════════
+function apriPrenota(sessionId){
+  selSessionId=sessionId;selMarittimo=null;selMatricola=null;
+  const s=_sessioni.find(x=>x.id===sessionId);
+  selSessData=s.Data;
+  const cnt=_prenotazioni.filter(p=>p.sessione_id===sessionId).length;
+  const liberi=Math.max(0,(s.Posti_Totali||0)-cnt);
+  document.getElementById('mb-data').textContent=fmtData(s.Data);
+  document.getElementById('mb-loc').textContent=s.Luogo||'—';
+  document.getElementById('mb-lib').textContent=liberi;
+  document.getElementById('mb-op').textContent=currentUser;
+  document.getElementById('mat-input').value='';
+  document.getElementById('warn-db').style.display='none';
+  document.getElementById('minor-alert').style.display='none';
+  document.getElementById('scheda-compact').classList.remove('show');
+  document.getElementById('nave-box').style.display='none';
+  document.getElementById('nave-select').value='';
+  document.getElementById('nave-select').classList.remove('required-err');
+  document.getElementById('section-note').style.display='none';
+  document.getElementById('section-amm').style.display='none';
+  document.getElementById('note-input').value='';
+  document.getElementById('amm-select').value='In attesa';
+  document.getElementById('btn-conferma-pren').disabled=true;
+  document.getElementById('ultima-visita-box').classList.remove('show');
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('mat-input').focus(),250);
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  _editPrenId=null;
+  selMarittimo=null;
+  const btn=document.getElementById('btn-conferma-pren');
+  if(btn){btn.disabled=true;btn.textContent='Conferma prenotazione';}
+}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+let _warnProceedCallback=null;
+function chiudiWarn(){
+  document.getElementById('modal-warn-overlay').classList.remove('open');
+  _warnProceedCallback=null;
+}
+function proceediComunque(){
+  document.getElementById('modal-warn-overlay').classList.remove('open');
+  const cb=_warnProceedCallback;
+  _warnProceedCallback=null;
+  if(cb) setTimeout(cb,50); // piccolo delay per permettere la chiusura del modal prima
+}
+document.getElementById('modal-warn-overlay').addEventListener('click',function(e){if(e.target===this)chiudiWarn();});
+
+async function cercaMarittimo(){
+  const mat=document.getElementById('mat-input').value.trim();
+  if(!mat){toast('Inserisci la matricola','error');return;}
+  selMatricola=mat;
+  document.getElementById('warn-db').style.display='none';
+  document.getElementById('minor-alert').style.display='none';
+  document.getElementById('scheda-compact').classList.remove('show');
+  document.getElementById('nave-box').style.display='none';
+  document.getElementById('section-note').style.display='none';
+  document.getElementById('section-amm').style.display='none';
+  document.getElementById('btn-conferma-pren').disabled=true;
+  document.getElementById('ultima-visita-box').classList.remove('show');
+  const btn=document.getElementById('btn-cerca');
+  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
+  try{
+    const res=await sbGet('Dipendenti',`Matricola_Aziendale=eq.${encodeURIComponent(mat)}&limit=1`);
+    if(!res.length){document.getElementById('warn-db').style.display='block';}
+    else{
+      const d=res[0];
+      selMarittimo={id:d.id,matricola_mecc:d.Matricola_Aziendale,cognome_nome:(d.Cognome+' '+d.Nome).trim(),qualifica:d.Qualifica,societa:null,data_nascita:d.Data_di_Nascita};
+      await caricaUltimaVisita(mat);
+      // controllo prenotazioni ultimi 30 giorni
+      const trentaGgFa=new Date();trentaGgFa.setDate(trentaGgFa.getDate()-30);
+      const trentaStr=trentaGgFa.toISOString().slice(0,10);
+      const recenti=await sbGet('Prenotazioni',`matricola_aziendale=eq.${encodeURIComponent(mat)}&select=id,sessione_id,created_at`);
+      const recentiUltimi30=recenti.filter(p=>{
+        const sess=_sessioni.find(x=>x.id===p.sessione_id);
+        return sess&&sess.Data>=trentaStr&&p.sessione_id!==selSessionId;
+      });
+      if(recentiUltimi30.length>0){
+        // mostra avviso
+        const dettagli=recentiUltimi30.map(p=>{
+          const s=_sessioni.find(x=>x.id===p.sessione_id);
+          return s?`<strong>${fmtData(s.Data)}</strong> — ${s.Luogo}`:'—';
+        }).join('<br>');
+        document.getElementById('warn-body').innerHTML=
+          `<strong>${selMarittimo.cognome_nome}</strong> è già stato prenotato negli ultimi 30 giorni per:<br><br>${dettagli}<br><br>Vuoi procedere comunque con una nuova prenotazione?`;
+        _warnProceedCallback=()=>mostraScheda(selMarittimo,true);
+        document.getElementById('modal-warn-overlay').classList.add('open');
+      }else{
+        mostraScheda(selMarittimo,true);
+      }
+    }
+  }catch(e){toast('Errore ricerca: '+e.message,'error');}
+  finally{btn.innerHTML='Cerca';btn.disabled=false;}
+}
+
+async function caricaUltimaVisita(mat){
+  try{
+    const uvs=await sbGet('UltimaVisita',`Matricola_Aziendale=eq.${encodeURIComponent(mat)}`);
+    const box=document.getElementById('ultima-visita-box');
+    const row=document.getElementById('uv-row');
+    if(!uvs.length){box.classList.remove('show');return;}
+    // parsing robusto della data — prende solo i primi 10 caratteri AAAA-MM-GG
+    function parsaData(v){
+      if(!v)return'—';
+      const s=String(v).slice(0,10);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return'—';
+      return fmtData(s);
+    }
+    row.innerHTML=uvs.map((uv,i)=>`
+      ${i>0?'<div style="width:1px;background:var(--amm);opacity:.3;align-self:stretch;margin:0 4px"></div>':''}
+      <div class="uv-item">
+        <div class="uv-lbl">${uv.Societa||'VMC'}</div>
+        <div class="uv-val">${parsaData(uv.Data_Visita)}</div>
+      </div>
+      <div class="uv-item">
+        <div class="uv-lbl">Esito</div>
+        <div class="uv-val" style="color:${uv.Esito==='Idoneo'?'var(--green)':uv.Esito==='Non idoneo'?'var(--red)':'var(--orange)'}">${uv.Esito||'—'}</div>
+      </div>`).join('');
+    box.classList.add('show');
+  }catch(e){/* silenzioso */}
+}
+
+function mostraScheda(m,known){
+  const sc=document.getElementById('scheda-compact');
+  const hdr=document.getElementById('sc-header');
+  sc.className='scheda-compact show '+(known?'known':'unknown');
+  hdr.className='sc-header '+(known?'known':'unknown');
+  if(known){
+    document.getElementById('sc-nome').textContent=m.cognome_nome||'—';
+    // controllo minorenne alla data della sessione
+    const minor=selSessData&&m.data_nascita&&isMinorenne(m.data_nascita,selSessData);
+    document.getElementById('minor-alert').style.display=minor?'block':'none';
+    // se minorenne → scrivi automaticamente nelle note
+    if(minor){
+      const noteInput=document.getElementById('note-input');
+      if(!noteInput.value) noteInput.value='minorenne';
+    }
+    const socMap={MOBY:'chip-moby',CIN:'chip-cin',GNV:'chip-gnv'};
+    document.getElementById('sc-row').innerHTML=
+      (m.societa?`<span class="sc-chip ${socMap[m.societa]||'chip-nave'}">${m.societa}</span>`:'')+
+      (m.qualifica?`<span class="sc-info">${m.qualifica}</span>`:'')+
+      (m.data_nascita?`<span class="sc-info">· ${fmtDob(m.data_nascita)}</span>`:'')+
+      (minor?`<span class="sc-chip chip-minor">MINORENNE</span>`:'');
+  }else{
+    document.getElementById('sc-nome').textContent='Matricola '+selMatricola+' — dati non disponibili';
+    document.getElementById('sc-row').innerHTML=`<span class="sc-chip chip-warn">⚠️ DB non aggiornato</span>`;
+  }
+  document.getElementById('nave-box').style.display='block';
+  document.getElementById('nave-select').value='';
+  document.getElementById('section-note').style.display='block';
+  document.getElementById('section-amm').style.display='block';
+  const ammSel=document.getElementById('amm-select');
+  const ammLock=document.getElementById('amm-lock-msg');
+  const ammNote=document.getElementById('amm-note-txt');
+  if(isAdmin){ammSel.disabled=false;ammLock.textContent='Modifica disponibile';ammLock.style.color='var(--amm)';ammNote.style.display='none';}
+  else{ammSel.disabled=true;ammLock.textContent="Riservato all'amministratore";ammLock.style.color='var(--muted)';ammNote.style.display='block';}
+  document.getElementById('btn-conferma-pren').disabled=false;
+}
+function prenotaSconosciuto(){selMarittimo=null;document.getElementById('warn-db').style.display='none';mostraScheda(null,false);}
+function resetScheda(){
+  selMarittimo=null;selMatricola=null;
+  document.getElementById('mat-input').value='';
+  document.getElementById('warn-db').style.display='none';
+  document.getElementById('minor-alert').style.display='none';
+  document.getElementById('scheda-compact').classList.remove('show');
+  document.getElementById('nave-box').style.display='none';
+  document.getElementById('section-note').style.display='none';
+  document.getElementById('section-amm').style.display='none';
+  document.getElementById('ultima-visita-box').classList.remove('show');
+  document.getElementById('btn-conferma-pren').disabled=true;
+  document.getElementById('mat-input').focus();
+}
+
+async function confirmPrenota(){
+  const naveVal=document.getElementById('nave-select').value;
+  if(!naveVal){document.getElementById('nave-select').classList.add('required-err');toast('Seleziona la nave','error');return;}
+  document.getElementById('nave-select').classList.remove('required-err');
+  const matricola=selMarittimo?selMarittimo.matricola_mecc:selMatricola;
+  try{
+    const dup=await sbGet('Prenotazioni',`matricola_aziendale=eq.${encodeURIComponent(matricola)}&sessione_id=eq.${selSessionId}&limit=1`);
+    if(dup.length){toast('Già prenotato per questa sessione','error');return;}
+  }catch(e){toast('Errore verifica: '+e.message,'error');return;}
+  const nave=naveVal==='SCELGO_DOPO'?'Da definire':naveVal;
+  const nuova={
+    sessione_id:selSessionId,matricola_aziendale:matricola,
+    cognome_nome:selMarittimo?selMarittimo.cognome_nome:'Matricola '+matricola,
+    qualifica:selMarittimo?selMarittimo.qualifica:null,
+    data_nascita:selMarittimo?selMarittimo.data_nascita:null,
+    nave_assegnata:nave,operatore:currentUser,
+    note:document.getElementById('note-input').value.trim()||null,
+    db_aggiornare:!selMarittimo,
+    esito_amm:isAdmin?document.getElementById('amm-select').value:'In attesa'
+  };
+  const btn=document.getElementById('btn-conferma-pren');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Salvataggio…';
+  try{
+    await sbPost('Prenotazioni',nuova);
+    // aggiorna UltimaVisita se esito admin
+    if(isAdmin&&selMarittimo&&nuova.esito_amm!=='In attesa'){
+      const sess=_sessioni.find(x=>x.id===selSessionId);
+      await aggiornaUltimaVisita(matricola,sess?.Data,nuova.esito_amm,nave);
+    }
+    closeModal();
+    toast('✅ Prenotazione confermata'+(selMarittimo?' per '+selMarittimo.cognome_nome:''));
+    await loadSessioni();
+  }catch(e){toast('Errore: '+e.message,'error');btn.disabled=false;btn.textContent='Conferma prenotazione';}
+}
+
+async function aggiornaUltimaVisita(mat,dataVisita,esito,nave){
+  const naveObj=_navi.find(n=>n.Nome_Nave===nave);
+  const soc=naveObj?naveObj.Societa:'VMC';
+  try{
+    // cerca se esiste già il record
+    const existing=await sbGet('UltimaVisita',
+      `Matricola_Aziendale=eq.${encodeURIComponent(mat)}&Societa=eq.${encodeURIComponent(soc)}&limit=1`);
+    if(existing.length){
+      // aggiorna record esistente
+      const id=existing[0].id;
+      await fetch(`${SB_URL}/rest/v1/UltimaVisita?id=eq.${id}`,{
+        method:'PATCH',headers:HDR,
+        body:JSON.stringify({Data_Visita:dataVisita,Esito:esito})
+      });
+    }else{
+      // inserisci nuovo record
+      await fetch(`${SB_URL}/rest/v1/UltimaVisita`,{
+        method:'POST',headers:HDR,
+        body:JSON.stringify({Matricola_Aziendale:mat,Societa:soc,Data_Visita:dataVisita,Esito:esito})
+      });
+    }
+  }catch(e){console.warn('UltimaVisita non aggiornata:',e.message);}
+}
+
+// ══ SLIDER SESSIONI ═══════════════════════════════
+let sliderSelSessId=null;
+
+function initSlider(){
+  const wrap=document.getElementById('sess-slider');
+  const sessioni=[..._sessioni].sort((a,b)=>a.Data.localeCompare(b.Data));
+  const prossima=sessioni.filter(s=>!isPassata(s.Data,s.riaperta))[0];
+  if(sliderSelSessId===null&&prossima) sliderSelSessId=prossima.id;
+
+  // costruisci pillole
+  let html=`<div class="sess-pill-all${!sliderSelSessId?' selected':''}" id="pill-all">Tutte</div>`;
+  html+=sessioni.map(s=>{
+    const past=isPassata(s.Data,s.riaperta);
+    const sel=s.id===sliderSelSessId;
+    const d=new Date(s.Data+'T00:00:00');
+    const giorno=d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'});
+    const anno=d.getFullYear();
+    return `<div class="sess-pill${sel?' selected':''}${past?' past':''}" data-id="${s.id}">
+      <div class="sess-pill-data">${giorno} ${anno}</div>
+      <div class="sess-pill-luogo">${s.Luogo||''}</div>
+    </div>`;
+  }).join('');
+  wrap.innerHTML=html;
+
+  // click handlers
+  wrap.querySelector('#pill-all').addEventListener('click',()=>sliderSelectAll());
+  wrap.querySelectorAll('.sess-pill[data-id]').forEach(pill=>{
+    pill.addEventListener('click',()=>{
+      if(!_sliderDragged) sliderSelectSess(parseInt(pill.dataset.id));
+    });
+  });
+
+  // scroll alla pill selezionata — mostrala all'inizio dello slider
+  setTimeout(()=>{
+    const wrap2=document.getElementById('sess-slider');
+    const sel=wrap2.querySelector('.sess-pill.selected');
+    if(sel){
+      wrap2.scrollLeft=sel.offsetLeft-wrap2.offsetLeft-8;
+    }
+  },150);
+
+  // drag
+  _initSliderDrag(wrap);
+  aggiornaLabelSlider();
+}
+
+let _sliderDragged=false;
+function _initSliderDrag(el){
+  let isDown=false,startX=0,scrollLeft=0,dist=0;
+  function down(e){
+    isDown=true;dist=0;_sliderDragged=false;
+    startX=(e.touches?e.touches[0].pageX:e.pageX);
+    scrollLeft=el.scrollLeft;
+    el.classList.add('dragging');
+  }
+  function move(e){
+    if(!isDown)return;
+    const x=(e.touches?e.touches[0].pageX:e.pageX);
+    dist=Math.abs(x-startX);
+    if(dist>4){_sliderDragged=true;e.preventDefault();}
+    el.scrollLeft=scrollLeft-(x-startX);
+  }
+  function up(){
+    isDown=false;
+    el.classList.remove('dragging');
+    setTimeout(()=>{_sliderDragged=false;},50);
+  }
+  el.addEventListener('mousedown',down);
+  el.addEventListener('mousemove',move);
+  el.addEventListener('mouseup',up);
+  el.addEventListener('mouseleave',up);
+  el.addEventListener('touchstart',down,{passive:true});
+  el.addEventListener('touchmove',move,{passive:false});
+  el.addEventListener('touchend',up);
+}
+
+function sliderSelectAll(){
+  sliderSelSessId=null;
+  document.querySelectorAll('.sess-pill').forEach(p=>p.classList.remove('selected'));
+  document.querySelectorAll('.sess-pill-all').forEach(p=>p.classList.add('selected'));
+  aggiornaLabelSlider();
+  renderRiepilogo();
+}
+function sliderSelectSess(id){
+  sliderSelSessId=(sliderSelSessId===id)?null:id;
+  document.querySelectorAll('.sess-pill[data-id]').forEach(p=>{
+    p.classList.toggle('selected',parseInt(p.dataset.id)===sliderSelSessId);
+  });
+  document.querySelectorAll('.sess-pill-all').forEach(p=>p.classList.toggle('selected',!sliderSelSessId));
+  aggiornaLabelSlider();
+  renderRiepilogo();
+}
+function initSliderVisual(){
+  document.querySelectorAll('.sess-pill[data-id]').forEach(p=>{
+    p.classList.toggle('selected',parseInt(p.dataset.id)===sliderSelSessId);
+  });
+  document.querySelectorAll('.sess-pill-all').forEach(p=>p.classList.toggle('selected',!sliderSelSessId));
+}
+function aggiornaLabelSlider(){
+  const lbl=document.getElementById('sel-sess-label');
+  if(!sliderSelSessId){lbl.textContent='Tutte le sessioni';return;}
+  const s=_sessioni.find(x=>x.id===sliderSelSessId);
+  lbl.textContent=s?`Sessione: ${fmtData(s.Data)} — ${s.Luogo}`:'Tutte le sessioni';
+}
+
+// ══ RIEPILOGO ═════════════════════════════════════
+async function loadRiepilogo(){
+  document.getElementById('riepilogo-list').innerHTML='<div class="empty"><span class="spinner"></span></div>';
+  sliderSelSessId=null; // reset filtro ad ogni caricamento
+  setConnDot('loading');
+  try{
+    _sessioni=await sbGet('Sessioni','order=Data');
+    _prenotazioni=await sbGet('Prenotazioni','order=created_at.desc');
+    fillOpFilter();
+    initSlider();
+    renderRiepilogo();
+    setConnDot('on');
+  }catch(e){setConnDot('off');document.getElementById('riepilogo-list').innerHTML=`<div class="empty">⚠️ Errore: ${e.message}</div>`;}
+}
+function fillOpFilter(){
+  const op=document.getElementById('f-op');const curO=op.value;
+  op.innerHTML='<option value="">Tutti gli operatori</option>'+[...USERS_NORMAL,...ADMIN_USERS.map(u=>u.name),'Admin'].map(u=>`<option>${u}</option>`).join('');
+  op.value=curO;
+}
+function renderRiepilogo(){
+  const cont=document.getElementById('riepilogo-list');
+  const fO=document.getElementById('f-op').value;
+  const fQ=document.getElementById('f-q').value.toLowerCase();
+  let filtered=_prenotazioni.filter(p=>
+    (!sliderSelSessId||p.sessione_id===sliderSelSessId)&&
+    (!fO||p.operatore===fO)&&
+    (!fQ||p.cognome_nome?.toLowerCase().includes(fQ)||String(p.matricola_aziendale||'').includes(fQ))
+  ).sort((a,b)=>(a.cognome_nome||'').localeCompare(b.cognome_nome||'','it'));
+
+  if(!filtered.length){
+    cont.innerHTML=`<div class="empty"><div class="empty-ico">📋</div><p>Nessuna prenotazione trovata.</p></div>`;
+    document.getElementById('pren-badge').style.display='none';
+    return;
+  }
+  // aggiorna badge
+  const badge=document.getElementById('pren-badge');
+  badge.textContent=filtered.length;
+  badge.style.display='inline-flex';
+
+  const ammCls={
+    'Idoneo':'amm-idoneo','Idoneo con prescrizioni':'amm-restrizioni',
+    'Non idoneo':'amm-non-idoneo','Assente':'amm-assente',
+    'Rinviato':'amm-assente','In attesa':'amm-pending'
+  };
+
+  const rows=filtered.map(p=>{
+    const s=_sessioni.find(x=>x.id===p.sessione_id);
+    const esito=p.esito_amm||'In attesa';
+    const esitoClr=ammCls[esito]||'amm-pending';
+    const canEdit=isAdmin||p.operatore===currentUser;
+    const naveStr=p.nave_assegnata==='Da definire'
+      ?`<span style="color:var(--orange);font-style:italic">Da definire</span>`
+      :(p.nave_assegnata||'—');
+
+    return `
+      <div class="riepilogo-item">
+        <div class="riepilogo-row">
+          <div>
+            <div class="rc-nome">${p.cognome_nome||'—'}</div>
+            <div class="rc-sub">${p.qualifica||''}${p.qualifica&&p.matricola_aziendale?' · ':''}${p.matricola_aziendale?`<span style="font-family:'DM Mono',monospace">${p.matricola_aziendale}</span>`:''}</div>
+          </div>
+          <div class="rc-cell">${naveStr}</div>
+          <div class="rc-note" title="${p.note||''}">${p.note?(p.note.length>35?p.note.slice(0,35):p.note):''}</div>
+          <div>
+            <span class="rc-badge ${esitoClr}">${esito}</span>
+            ${isAdmin?`<button class="btn btn-ghost btn-sm" style="margin-left:4px;font-size:.6rem;padding:1px 5px" onclick="apriModalEsito(${p.id})">✏️</button>`:''}
+          </div>
+          <div class="rc-sess">
+            <strong>${fmtData(s?.Data)}</strong>
+            📍 ${s?.Luogo||'—'}<br>
+            <span style="font-size:.65rem">da ${p.operatore}</span>
+            ${p.created_at?`<br><span style="font-size:.62rem;color:var(--muted)">${new Date(p.created_at).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`:''}
+          </div>
+          <div class="rc-actions">
+            ${canEdit?`<button class="btn btn-warn btn-sm" onclick="modificaPren(${p.id})" title="Modifica">✏️</button>`:''}
+            ${canEdit?`<button class="btn btn-danger btn-sm" onclick="delPren(${p.id})" title="Elimina">🗑</button>`:''}
+            ${canEdit&&p.nave_assegnata==='Da definire'?`<button class="btn btn-warn btn-sm" onclick="toggleEditNave(${p.id})">🚢</button>`:''}
+          </div>
+        </div>
+        ${p.db_aggiornare?`<div class="rc-db-warn">⚠️ Dati marittimo non in DB</div>`:''}
+        <div class="rc-edit-nave" id="en-${p.id}">
+          <select id="en-sel-${p.id}">
+            <option value="">— seleziona nave —</option>
+            ${_navi.map(n=>`<option value="${n.Nome_Nave}">${n.Nome_Nave}</option>`).join('')}
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="saveNave(${p.id})">Salva</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleEditNave(${p.id})">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  cont.innerHTML=`
+    <div class="riepilogo-table-wrap">
+      <div class="riepilogo-thead riepilogo-cols">
+        <div class="riepilogo-th">Nome</div>
+        <div class="riepilogo-th">Nave</div>
+        <div class="riepilogo-th">Note</div>
+        <div class="riepilogo-th">Esito AMM</div>
+        <div class="riepilogo-th">Sessione</div>
+        <div class="riepilogo-th"></div>
+      </div>
+      ${rows}
+    </div>`;
+}
+function toggleEditNave(id){document.getElementById('en-'+id).classList.toggle('show');}
+function toggleEditNave(id){document.getElementById('en-'+id).classList.toggle('show');}
+async function saveNave(id){
+  const nave=document.getElementById('en-sel-'+id).value;
+  if(!nave){toast('Seleziona una nave','error');return;}
+  try{await sbPatch('Prenotazioni',id,{nave_assegnata:nave});toast('✅ Nave aggiornata');await loadRiepilogo();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+
+// ── Modal esito numerico ──────────────────────────
+let _esitoTargetId=null;
+function apriModalEsito(prenId){
+  _esitoTargetId=prenId;
+  const p=_prenotazioni.find(x=>x.id===prenId);
+  document.getElementById('me-nome').textContent=p?.cognome_nome||'—';
+  document.getElementById('me-input').value='';
+  document.getElementById('me-err').style.display='none';
+  document.getElementById('modal-esito-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('me-input').focus(),200);
+}
+function chiudiModalEsito(){
+  document.getElementById('modal-esito-overlay').classList.remove('open');
+  _esitoTargetId=null;
+}
+document.getElementById('modal-esito-overlay').addEventListener('click',function(e){if(e.target===this)chiudiModalEsito();});
+async function confermaEsito(){
+  const n=parseInt(document.getElementById('me-input').value);
+  if(!n||n<1||n>6){document.getElementById('me-err').style.display='block';return;}
+  const nuovoEsito=ESITI[n-1];
+  const p=_prenotazioni.find(x=>x.id===_esitoTargetId);if(!p)return;
+  try{
+    await sbPatch('Prenotazioni',_esitoTargetId,{esito_amm:nuovoEsito});
+    if(nuovoEsito!=='In attesa'&&p.matricola_aziendale){
+      const sess=_sessioni.find(x=>x.id===p.sessione_id);
+      await aggiornaUltimaVisita(p.matricola_aziendale,sess?.Data,nuovoEsito,p.nave_assegnata);
+    }
+    chiudiModalEsito();
+    toast('✅ Esito aggiornato: '+nuovoEsito);
+    await loadRiepilogo();
+  }catch(e){toast('Errore: '+e.message,'error');}
+}
+
+async function delPren(id){
+  if(!confirm('Eliminare questa prenotazione?'))return;
+  try{await sbDelete('Prenotazioni',id);toast('Prenotazione eliminata');await loadRiepilogo();await loadSessioni();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+
+// ══ ADMIN ═════════════════════════════════════════
+async function loadAdmin(){
+  try{
+    _sessioni=await sbGet('Sessioni','order=Data');
+    _prenotazioni=await sbGet('Prenotazioni','select=id,sessione_id');
+    _navi=await sbGet('Navi','order=Societa,Nome_Nave');
+    _luoghi=await sbGet('Luoghi','order=nome');
+    renderAdminSessioni();renderAdminNavi();renderAdminLuoghi();renderAdminPin();
+    await renderAdminEmail();
+    await renderAdminEsiti();
+    fillLuoghiSelects();buildNaveSelect();
+  }catch(e){toast('Errore caricamento: '+e.message,'error');}
+}
+
+// ── Inserimento Esiti ─────────────────────────────
+async function renderAdminEsiti(){
+  const wrap=document.getElementById('esiti-list-wrap');
+  const bar=document.getElementById('esiti-save-bar');
+  const q=(document.getElementById('esiti-search')?.value||'').toLowerCase().trim();
+  wrap.innerHTML='<div class="empty"><span class="spinner"></span></div>';
+  try{
+    const pren=await sbGet('Prenotazioni','order=sessione_id,cognome_nome&select=id,sessione_id,cognome_nome,matricola_aziendale,nave_assegnata,esito_amm');
+    // ordina: data sessione crescente, poi alfabetico
+    const sorted=[...pren].sort((a,b)=>{
+      const sa=_sessioni.find(x=>x.id===a.sessione_id);
+      const sb=_sessioni.find(x=>x.id===b.sessione_id);
+      const dataCmp=(sa?.Data||'').localeCompare(sb?.Data||'');
+      if(dataCmp!==0)return dataCmp;
+      return(a.cognome_nome||'').localeCompare(b.cognome_nome||'','it');
+    });
+    // filtra: se c'è ricerca mostra tutti i match, altrimenti solo "In attesa"
+    const filtered=sorted.filter(p=>{
+      const esito=p.esito_amm||'In attesa';
+      if(q){
+        return p.cognome_nome?.toLowerCase().includes(q)||String(p.matricola_aziendale||'').includes(q);
+      }
+      return esito==='In attesa';
+    });
+    document.getElementById('esiti-count').textContent=filtered.length;
+    if(!filtered.length){
+      wrap.innerHTML=`<div class="empty"><div class="empty-ico">${q?'🔍':'✅'}</div><p>${q?'Nessun risultato per la ricerca.':'Nessun dipendente in attesa di esito.'}</p></div>`;
+      bar.style.display='none';return;
+    }
+    const ammCls={'Idoneo':'amm-idoneo','Idoneo con prescrizioni':'amm-restrizioni','Non idoneo':'amm-non-idoneo','Assente':'amm-assente','Rinviato':'amm-assente','In attesa':'amm-pending'};
+    wrap.innerHTML=`<div class="esiti-table-wrap">
+      <table class="esiti-table">
+        <thead><tr>
+          <th>Nome</th><th>Matricola</th><th>Sessione</th><th>Nave</th><th>Esito attuale → Nuovo</th>
+        </tr></thead>
+        <tbody>
+          ${filtered.map(p=>{
+            const s=_sessioni.find(x=>x.id===p.sessione_id);
+            const esito=p.esito_amm||'In attesa';
+            const esitoIdx=ESITI.indexOf(esito);
+            const esitoClr=ammCls[esito]||'';
+            return `<tr>
+              <td style="font-weight:700">${p.cognome_nome||'—'}</td>
+              <td style="font-family:'DM Mono',monospace;font-size:.78rem">${p.matricola_aziendale||'—'}</td>
+              <td style="font-size:.78rem">${s?fmtData(s.Data)+' — '+s.Luogo:'—'}</td>
+              <td style="font-size:.78rem">${p.nave_assegnata||'—'}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  ${q?`<span class="bk-esito-inline ${esitoClr}" style="font-size:.7rem">${esito}</span> →`:''}
+                  <select class="esito-sel" id="es-${p.id}" data-pren-id="${p.id}" data-mat="${p.matricola_aziendale||''}" data-nave="${p.nave_assegnata||''}" data-sess="${p.sessione_id}">
+                    ${ESITI.map((e,i)=>`<option value="${e}"${esitoIdx===i?' selected':''}>${i+1}. ${e}</option>`).join('')}
+                  </select>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+    bar.style.display='flex';
+  }catch(e){wrap.innerHTML=`<div class="empty">⚠️ Errore: ${e.message}</div>`;bar.style.display='none';}
+}
+
+async function salvaEsiti(){
+  const sels=document.querySelectorAll('.esito-sel');
+  if(!sels.length){toast('Nessun dato da salvare','error');return;}
+  const btn=document.querySelector('#esiti-save-bar .btn-primary');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Salvataggio…';
+  let ok=0,err=0;
+  for(const sel of sels){
+    const prenId=parseInt(sel.dataset.prenId);
+    const esito=sel.value;
+    const mat=sel.dataset.mat;
+    const nave=sel.dataset.nave;
+    const sessId=parseInt(sel.dataset.sess);
+    try{
+      await sbPatch('Prenotazioni',prenId,{esito_amm:esito});
+      // aggiorna UltimaVisita
+      if(esito!=='In attesa'&&mat){
+        const sess=_sessioni.find(x=>x.id===sessId);
+        await aggiornaUltimaVisita(mat,sess?.Data,esito,nave);
+      }
+      ok++;
+    }catch(e){err++;}
+  }
+  btn.disabled=false;btn.textContent='💾 Salva tutti gli esiti';
+  if(err===0)toast(`✅ ${ok} esit${ok===1?'o':'i'} salvat${ok===1?'o':'i'}`);
+  else toast(`⚠️ ${ok} salvati, ${err} errori`,'error');
+  // ricarica lista esiti
+  await renderAdminEsiti();
+}
+
+// ── Sessioni ──────────────────────────────────────
+async function addSessione(){
+  const data=document.getElementById('ns-data').value;
+  const luogo=document.getElementById('ns-loc').value;
+  const posti=parseInt(document.getElementById('ns-posti').value);
+  if(!data){toast('Inserisci la data','error');return;}
+  if(!luogo){toast('Seleziona il luogo','error');return;}
+  if(!posti||posti<1){toast('Inserisci i posti','error');return;}
+  if(_sessioni.find(s=>s.Data===data&&s.Luogo===luogo)){toast('Sessione già esistente','error');return;}
+  try{
+    await sbPost('Sessioni',{Data:data,Luogo:luogo,Posti_Totali:posti,Nota:null});
+    document.getElementById('ns-data').value='';document.getElementById('ns-loc').value='';document.getElementById('ns-posti').value='';
+    toast('✅ Sessione aggiunta');await loadAdmin();
+  }catch(e){toast('Errore: '+e.message,'error');}
+}
+function renderAdminSessioni(){
+  const cont=document.getElementById('adm-sess-list');
+  const sessioni=[..._sessioni].sort((a,b)=>a.Data.localeCompare(b.Data));
+  document.getElementById('sess-count').textContent=sessioni.length?`${sessioni.length} session${sessioni.length>1?'i':'e'}`:'';
+  if(!sessioni.length){cont.innerHTML=`<div class="empty"><div class="empty-ico">📅</div><p>Nessuna sessione.</p></div>`;return;}
+  cont.innerHTML=sessioni.map(s=>{
+    const cnt=_prenotazioni.filter(p=>p.sessione_id===s.id).length;
+    const liberi=Math.max(0,s.Posti_Totali-cnt);
+    const past=isPassata(s.Data,s.riaperta);
+    const libCls=liberi===0?'liberi-zero':liberi<=3?'liberi-warn':'liberi-ok';
+    const emailSent=s.email_inviata_at?true:false;
+    const emailSentLabel=emailSent?`<div class="sess-email-sent">✉️ Email inviata: ${s.email_inviata_at}</div>`:'';
+    const isRiaperta=s.riaperta===true;
+    const pastReal=(()=>{const o=new Date();o.setHours(0,0,0,0);return new Date(s.Data+'T00:00:00')<o;})();
+    return `<div class="sess-adm-item${emailSent?' email-inviata':''}" style="${past&&!isRiaperta?'opacity:.5':''}">
+      <div class="sess-adm-top">
+        <div>
+          <div class="sess-adm-data">${fmtData(s.Data)}${past?`<span class="badge-past" style="${isRiaperta?'background:#d4f0e2;color:#2a7a50;border-color:#b8dfc8':''}">${isRiaperta?'🟢 Riaperta':'Conclusa'}</span>`:''}</div>
+          <div class="sess-adm-sub">${fmtGiorno(s.Data)}</div>
+          ${s.Nota?`<div style="font-size:.7rem;color:var(--orange);margin-top:2px;font-style:italic">📌 ${s.Nota}</div>`:''}
+          ${emailSentLabel}
+          ${pastReal&&isAdmin?`<label class="toggle-wrap" style="margin-top:5px">
+            <div class="toggle"><input type="checkbox" ${isRiaperta?'checked':''} onchange="toggleRiaperta(${s.id},this.checked)"><span class="toggle-slider"></span></div>
+            <span class="toggle-lbl">${isRiaperta?'Riaperta — clicca per concludere':'Riapri sessione'}</span>
+          </label>`:''}
+        </div>
+        <div class="sess-adm-luogo">📍 ${s.Luogo}</div>
+        <div class="sess-adm-posti">${s.Posti_Totali}<small> tot</small> <span class="${libCls}">${liberi}</span><small> lib</small></div>
+        <div class="sess-adm-actions">
+          <button class="btn btn-amm btn-sm" onclick="apriModalEmail(${s.id})" title="Invia convocazione">📧</button>
+          <button class="btn btn-warn btn-sm" onclick="toggleEdit(${s.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="delSess(${s.id})">🗑</button>
+        </div>
+      </div>
+      <div class="sess-adm-edit" id="edit-${s.id}">
+        <div class="edit-grid">
+          <div class="form-group"><label>Data</label><input class="form-input" type="date" id="ed-data-${s.id}" value="${s.Data}"></div>
+          <div class="form-group"><label>Luogo</label>
+            <select class="form-input" id="ed-luogo-${s.id}" style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238c7e6e' d='M6 8L1 3h10z'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 10px center;background-color:var(--bg);padding-right:28px">
+              ${_luoghi.map(l=>`<option${l.nome===s.Luogo?' selected':''}>${l.nome}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group"><label>Posti</label><input class="form-input" type="number" id="ed-posti-${s.id}" value="${s.Posti_Totali}" min="1"></div>
+        </div>
+        <div class="edit-nota">
+          <label>Nota sessione</label>
+          <textarea id="ed-nota-${s.id}" placeholder="es. Portare carta d'identità…">${s.Nota||''}</textarea>
+        </div>
+        <div class="edit-actions">
+          <button class="btn btn-ghost btn-sm" onclick="toggleEdit(${s.id})">Annulla</button>
+          <button class="btn btn-primary btn-sm" onclick="saveEdit(${s.id})">💾 Salva</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function toggleRiaperta(id,riaperta){
+  try{
+    await sbPatch('Sessioni',id,{riaperta:riaperta});
+    toast(riaperta?'✅ Sessione riaperta':'Sessione conclusa');
+    await loadAdmin();
+    await loadSessioni();
+  }catch(e){toast('Errore: '+e.message,'error');}
+}
+function toggleEdit(id){document.getElementById('edit-'+id).classList.toggle('open');}
+async function saveEdit(id){
+  const nd=document.getElementById(`ed-data-${id}`).value;
+  const nl=document.getElementById(`ed-luogo-${id}`).value;
+  const np=parseInt(document.getElementById(`ed-posti-${id}`).value);
+  const nn=document.getElementById(`ed-nota-${id}`).value.trim()||null;
+  if(!nd||!nl||!np||np<1){toast('Compila tutti i campi','error');return;}
+  try{await sbPatch('Sessioni',id,{Data:nd,Luogo:nl,Posti_Totali:np,Nota:nn});toast('✅ Sessione aggiornata');await loadAdmin();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+async function delSess(id){
+  const cnt=_prenotazioni.filter(p=>p.sessione_id===id).length;
+  const msg=cnt?`Questa sessione ha ${cnt} prenotazion${cnt>1?'i':'e'}. Verranno eliminate. Confermi?`:'Eliminare questa sessione?';
+  if(!confirm(msg))return;
+  try{
+    if(cnt){for(const p of _prenotazioni.filter(p=>p.sessione_id===id))await sbDelete('Prenotazioni',p.id);}
+    await sbDelete('Sessioni',id);toast('Sessione eliminata');await loadAdmin();
+  }catch(e){toast('Errore: '+e.message,'error');}
+}
+
+// ── Navi ──────────────────────────────────────────
+async function addNave(){
+  const nome=document.getElementById('nn-nome').value.trim().toUpperCase();
+  const soc=document.getElementById('nn-soc').value;
+  if(!nome){toast('Inserisci il nome','error');return;}
+  if(!soc){toast('Seleziona la società','error');return;}
+  if(_navi.find(n=>n.Nome_Nave.toUpperCase()===nome)){toast('Nave già presente','error');return;}
+  try{await sbPost('Navi',{Nome_Nave:nome,Societa:soc});document.getElementById('nn-nome').value='';document.getElementById('nn-soc').value='';toast('✅ Nave aggiunta');await loadAdmin();buildNaveSelect();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+function renderAdminNavi(){
+  const cont=document.getElementById('adm-navi-list');
+  const navi=[..._navi].sort((a,b)=>a.Societa.localeCompare(b.Societa)||a.Nome_Nave.localeCompare(b.Nome_Nave));
+  document.getElementById('navi-count').textContent=navi.length?`${navi.length} nav${navi.length>1?'i':'e'}`:'';
+  if(!navi.length){cont.innerHTML=`<div class="empty"><div class="empty-ico">🚢</div><p>Nessuna nave.</p></div>`;return;}
+  const socMap={MOBY:'chip-moby',CIN:'chip-cin',GNV:'chip-gnv'};
+  cont.innerHTML=navi.map(n=>`
+    <div class="adm-list-item">
+      <div style="flex:1"><div class="adm-list-item-name">${n.Nome_Nave}</div>
+      <div style="margin-top:3px"><span class="sc-chip ${socMap[n.Societa]||'chip-nave'}" style="font-size:.66rem">${n.Societa}</span></div></div>
+      <button class="btn btn-warn btn-sm" onclick="toggleNaveEdit(${n.id})">✏️</button>
+      <button class="btn btn-danger btn-sm" onclick="delNave(${n.id})">🗑</button>
+    </div>
+    <div class="adm-list-edit" id="ne-${n.id}">
+      <div class="adm-list-edit-row">
+        <input class="form-input" type="text" id="ne-nome-${n.id}" value="${n.Nome_Nave}">
+        <select class="societa-select" id="ne-soc-${n.id}">
+          <option value="MOBY"${n.Societa==='MOBY'?' selected':''}>MOBY</option>
+          <option value="CIN"${n.Societa==='CIN'?' selected':''}>CIN</option>
+          <option value="GNV"${n.Societa==='GNV'?' selected':''}>GNV</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="saveNaveEdit(${n.id})">💾</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleNaveEdit(${n.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+function toggleNaveEdit(id){document.getElementById('ne-'+id).classList.toggle('open');}
+async function saveNaveEdit(id){
+  const nome=document.getElementById(`ne-nome-${id}`).value.trim().toUpperCase();
+  const soc=document.getElementById(`ne-soc-${id}`).value;
+  if(!nome||!soc){toast('Compila tutti i campi','error');return;}
+  try{await sbPatch('Navi',id,{Nome_Nave:nome,Societa:soc});toast('✅ Nave aggiornata');await loadAdmin();buildNaveSelect();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+async function delNave(id){
+  const n=_navi.find(x=>x.id===id);
+  if(!confirm(`Eliminare "${n?.Nome_Nave}"?`))return;
+  try{await sbDelete('Navi',id);toast('Nave eliminata');await loadAdmin();buildNaveSelect();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+
+// ── Luoghi (da Supabase) ──────────────────────────
+async function addLuogo(){
+  const nome=document.getElementById('nl-nome').value.trim();
+  if(!nome){toast('Inserisci il nome','error');return;}
+  if(_luoghi.find(l=>l.nome.toLowerCase()===nome.toLowerCase())){toast('Luogo già presente','error');return;}
+  try{await sbPost('Luoghi',{nome:nome});document.getElementById('nl-nome').value='';toast('✅ Luogo aggiunto');await loadAdmin();fillLuoghiSelects();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+function renderAdminLuoghi(){
+  const cont=document.getElementById('adm-luoghi-list');
+  document.getElementById('luoghi-count').textContent=_luoghi.length?`${_luoghi.length} luogh${_luoghi.length>1?'i':'o'}`:'';
+  if(!_luoghi.length){cont.innerHTML=`<div class="empty"><div class="empty-ico">📍</div><p>Nessun luogo.</p></div>`;return;}
+  cont.innerHTML=_luoghi.map(l=>`
+    <div class="adm-list-item">
+      <div class="adm-list-item-name" style="flex:1">📍 ${l.nome}</div>
+      <button class="btn btn-warn btn-sm" onclick="toggleLuogoEdit(${l.id})">✏️</button>
+      <button class="btn btn-danger btn-sm" onclick="delLuogo(${l.id})">🗑</button>
+    </div>
+    <div class="adm-list-edit" id="le-${l.id}">
+      <div class="adm-list-edit-row">
+        <input class="form-input" type="text" id="le-nome-${l.id}" value="${l.nome}">
+        <button class="btn btn-primary btn-sm" onclick="saveLuogoEdit(${l.id})">💾</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleLuogoEdit(${l.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+function toggleLuogoEdit(id){document.getElementById('le-'+id).classList.toggle('open');}
+async function saveLuogoEdit(id){
+  const nome=document.getElementById(`le-nome-${id}`).value.trim();
+  if(!nome){toast('Inserisci il nome','error');return;}
+  try{await sbPatch('Luoghi',id,{nome:nome});toast('✅ Luogo aggiornato');await loadAdmin();fillLuoghiSelects();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+async function delLuogo(id){
+  const l=_luoghi.find(x=>x.id===id);
+  if(!confirm(`Eliminare "${l?.nome}"?`))return;
+  try{await sbDelete('Luoghi',id);toast('Luogo eliminato');await loadAdmin();fillLuoghiSelects();}
+  catch(e){toast('Errore: '+e.message,'error');}
+}
+
+// ── PIN admin ─────────────────────────────────────
+function renderAdminPin(){
+  const cont=document.getElementById('adm-pin-list');
+  cont.innerHTML=ADMIN_USERS.map((u,i)=>`
+    <div class="pin-item">
+      <div class="pin-name">${u.name}</div>
+      <div class="pin-val">••••</div>
+      <button class="btn btn-warn btn-sm" onclick="togglePinEdit(${i})">✏️ Modifica</button>
+    </div>
+    <div class="pin-edit" id="pe-${i}">
+      <div class="pin-edit-row">
+        <input type="password" id="pe-input-${i}" maxlength="8" placeholder="Nuovo PIN"
+          oninput="this.value=this.value.replace(/\D/g,'')"
+          onkeydown="if(event.key==='Enter')savePinEdit(${i})">
+        <button class="btn btn-primary btn-sm" onclick="savePinEdit(${i})">💾 Salva</button>
+        <button class="btn btn-ghost btn-sm" onclick="togglePinEdit(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+function togglePinEdit(i){
+  document.getElementById('pe-'+i).classList.toggle('open');
+  if(document.getElementById('pe-'+i).classList.contains('open'))
+    setTimeout(()=>document.getElementById(`pe-input-${i}`).focus(),80);
+}
+function savePinEdit(i){
+  const nuovo=document.getElementById(`pe-input-${i}`).value;
+  if(!nuovo||nuovo.length<4){toast('PIN minimo 4 cifre','error');return;}
+  ADMIN_USERS[i].pin=nuovo;
+  togglePinEdit(i);
+  toast(`✅ PIN di ${ADMIN_USERS[i].name} aggiornato`);
+  renderAdminPin();
+}
+
+// ══ EMAIL CONVOCAZIONE ═══════════════════════════
+let EMAIL_TO='mdl@lineaambiente.it';
+let EMAIL_CC='info@in-lab.it,armamentocamera-cucina@tirrenia.it,armamentohotel@moby.it,armamentocopmac@moby.it';
+let _emailDestinatari=[];
+
+// qualifiche che richiedono corso 351/353 — tutte le altre → "nil"
+const QUALIFICHE_CORSO=new Set([
+  '1.Elettricista','Able Seaman','All.Comune Polivalente','Allievo Elettricista',
+  'Bosun','Capo Operaio','Carpenter','Carpentiere','Comune Di Macchina',
+  'Electrician','Elettricista Fitter','Giovanotto Di Coperta','Giovanotto Di Macchina',
+  'Marinaio','Marinaio T','Motorman','Mozzo','Nostromo','O/S',
+  'Operaio Frigorista','Operaio Meccanico','Operaio Motorista',
+  'Ottonaio','Plumber','Trattorista','Wiper'
+]);
+
+function getDataCorso(corso, qualifica){
+  // marittimo non in DB — qualifica sconosciuta
+  if(!qualifica) return '—';
+  // qualifica non richiede corso
+  if(!QUALIFICHE_CORSO.has(qualifica)) return 'nil';
+  // qualifica richiede corso ma data mancante o 1900
+  if(!corso||!corso.Data_Corso||corso.Data_Corso===''||corso.Data_Corso==='1900-01-00') return 'Data/Corso mancante';
+  // data presente
+  return fmtDob(String(corso.Data_Corso).slice(0,10));
+}
+
+let _emailSessId=null;
+
+function chiudiModalEmail(){
+  document.getElementById('modal-email-overlay').classList.remove('open');
+  _emailSessId=null;
+}
+document.getElementById('modal-email-overlay').addEventListener('click',function(e){if(e.target===this)chiudiModalEmail();});
+
+async function apriModalEmail(sessId){
+  _emailSessId=sessId;
+  const s=_sessioni.find(x=>x.id===sessId);
+  if(!s)return;
+  const oggetto=`Convocazione visita medica del ${fmtData(s.Data)} — ${s.Luogo}`;
+  document.getElementById('me-oggetto').textContent=oggetto;
+  document.getElementById('me-to').textContent=EMAIL_TO;
+  document.getElementById('me-cc-list').textContent=EMAIL_CC.split(',').join(', ');
+  document.getElementById('me-tbody').innerHTML=`<tr><td colspan="13" style="text-align:center;padding:1rem"><span class="spinner"></span> Caricamento...</td></tr>`;
+  document.getElementById('modal-email-overlay').classList.add('open');
+  try{
+    // carica prenotazioni della sessione
+    const pren=await sbGet('Prenotazioni',`sessione_id=eq.${sessId}&order=cognome_nome`);
+    if(!pren.length){
+      document.getElementById('me-tbody').innerHTML=`<tr><td colspan="13" style="text-align:center;padding:1rem;color:var(--muted)">Nessuna prenotazione per questa sessione.</td></tr>`;
+      return;
+    }
+    // per ogni prenotazione carica dati Dipendenti e Corsi
+    const matricole=pren.map(p=>p.matricola_aziendale).filter(Boolean);
+    const [dipendenti,corsi]=await Promise.all([
+      matricole.length?sbGet('Dipendenti',`Matricola_Aziendale=in.(${matricole.map(m=>encodeURIComponent(m)).join(',')})`):[],
+      matricole.length?sbGet('Corsi',`Matricola_Aziendale=in.(${matricole.map(m=>encodeURIComponent(m)).join(',')})`):[],
+    ]);
+    const dipMap={};dipendenti.forEach(d=>{dipMap[d.Matricola_Aziendale]=d;});
+    const corsiMap={};corsi.forEach(c=>{corsiMap[c.Matricola_Aziendale]=c;});
+
+    const rows=pren.map(p=>{
+      const dip=dipMap[p.matricola_aziendale]||{};
+      const corso=corsiMap[p.matricola_aziendale];
+      // società dalla nave
+      const naveObj=_navi.find(n=>n.Nome_Nave===p.nave_assegnata);
+      const societa=naveObj?naveObj.Societa:'—';
+      // corso 351/353 con logica qualifica
+      const qualificaPerCorso=dip.Qualifica||p.qualifica||null;
+      const dataCorso=getDataCorso(corso,qualificaPerCorso);
+      const corsoStyle=dataCorso==='Data/Corso mancante'?'color:var(--red);font-weight:700':dataCorso==='nil'?'color:var(--muted);font-style:italic':'';
+      // data nascita
+      const dataNascita=dip.Data_di_Nascita?fmtDob(String(dip.Data_di_Nascita).slice(0,10)):'—';
+      const td='style="text-align:center;padding:9px 12px;vertical-align:middle;white-space:nowrap"';
+      const tdC=(extra)=>`style="text-align:center;padding:9px 12px;vertical-align:middle;white-space:nowrap;${extra}"`;
+      return `<tr>
+        <td ${td}>${p.matricola_aziendale||'—'}</td>
+        <td ${td}>${p.operatore||'—'}</td>
+        <td ${td}>${p.nave_assegnata||'—'}</td>
+        <td ${td}>${societa}</td>
+        <td ${td}>${p.note||''}</td>
+        <td ${tdC(corsoStyle)}>${dataCorso}</td>
+        <td ${td}>${dip.Cognome&&dip.Nome?dip.Cognome+' '+dip.Nome:p.cognome_nome||'—'}</td>
+        <td ${td}>${dip.Qualifica||p.qualifica||'—'}</td>
+        <td ${td}>${dip.Compartimento||'—'}</td>
+        <td ${td}>${dip.Matricola||'—'}</td>
+        <td ${td}>${dip.Luogo_di_Nascita||'—'}</td>
+        <td ${td}>${dataNascita}</td>
+        <td ${td}>${dip.Telefono||'—'}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('me-tbody').innerHTML=rows;
+  }catch(e){
+    document.getElementById('me-tbody').innerHTML=`<tr><td colspan="13" style="text-align:center;padding:1rem;color:var(--red)">⚠️ Errore: ${e.message}</td></tr>`;
+  }
+}
+
+async function invioEmail(){
+  const s=_sessioni.find(x=>x.id===_emailSessId);if(!s)return;
+  const oggetto=`Convocazione visita medica del ${fmtData(s.Data)} — ${s.Luogo}`;
+
+  // raccoglie dati dalla griglia visualizzata
+  const tbody=document.getElementById('me-tbody');
+  const righe=Array.from(tbody.querySelectorAll('.me-grid-row')).map(row=>{
+    return Array.from(row.querySelectorAll('.me-cell')).map(c=>c.textContent.trim());
+  });
+  // se non ci sono righe (struttura div), prova con tr/td
+  const righeFinali=righe.length?righe:Array.from(tbody.querySelectorAll('tr')).map(tr=>
+    Array.from(tr.querySelectorAll('td')).map(td=>td.textContent.trim())
+  );
+
+  const intestazioni=['Matr.Az.','Utente','Nave','Soc.','Note','Corso 351/353',
+    'Cognome e Nome','Qualifica','Compartimento','Matricola','Luogo Nascita','Data Nascita','Telefono'];
+  const nPrenotati=righeFinali.length;
+
+  // ── STEP 1: genera PDF landscape ──────────────────
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pw=doc.internal.pageSize.getWidth();
+
+    // intestazione PDF
+    doc.setFillColor(0,112,192);
+    doc.rect(0,0,pw,22,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(13);doc.setFont('helvetica','bold');
+    doc.text('VMC 271 — Convocazione Visita Medico Competente',pw/2,9,{align:'center'});
+    doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.text(`Sessione: ${fmtData(s.Data)} — ${s.Luogo} — ${nPrenotati} prenotat${nPrenotati===1?'o':'i'}`,pw/2,17,{align:'center'});
+
+    // tabella
+    doc.autoTable({
+      startY:26,
+      head:[intestazioni],
+      body:righeFinali,
+      styles:{fontSize:7,cellPadding:2,halign:'center',valign:'middle'},
+      headStyles:{fillColor:[0,112,192],textColor:255,fontStyle:'bold',halign:'center'},
+      alternateRowStyles:{fillColor:[248,245,241]},
+      didParseCell:(data)=>{
+        if(data.cell.raw==='Data/Corso mancante'){data.cell.styles.textColor=[200,80,80];data.cell.styles.fontStyle='bold';}
+        if(data.cell.raw==='nil'){data.cell.styles.textColor=[140,126,110];data.cell.styles.fontStyle='italic';}
+      },
+      margin:{left:8,right:8},
+    });
+
+    // footer con logo S.M.A.R.T su ogni pagina
+    const pageCount=doc.internal.getNumberOfPages();
+    for(let i=1;i<=pageCount;i++){
+      doc.setPage(i);
+      const ph=doc.internal.pageSize.getHeight();
+      // rettangolo blu footer
+      doc.setFillColor(0,112,192);
+      doc.rect(0,ph-10,pw,10,'F');
+      // testo S.M.A.R.T SOLUTIONS
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(7);doc.setFont('helvetica','bold');
+      doc.text('S.M.A.R.T',14,ph-5.5);
+      doc.setFontSize(5);doc.setFont('helvetica','normal');
+      doc.text('SOLUTIONS',14,ph-2.5);
+      // data generazione centrata
+      doc.setFontSize(6);doc.setFont('helvetica','normal');
+      doc.text(`Generato il ${new Date().toLocaleString('it-IT')}`,pw/2,ph-4,{align:'center'});
+      // pagina a destra
+      doc.setFontSize(6);
+      doc.text(`Pag. ${i} / ${pageCount}`,pw-10,ph-4,{align:'right'});
+    }
+
+    // scarica PDF
+    const nomefile=`VMC_Convocazione_${s.Data}_${s.Luogo.replace(/\s/g,'_')}.pdf`;
+    doc.save(nomefile);
+    toast('📄 PDF scaricato in Download — aprilo e allegalo alla email in Outlook');
+  }catch(e){
+    toast('⚠️ Errore PDF: '+e.message,'error');
+    console.error(e);
+  }
+
+  // ── STEP 2: corpo email con solo Nome + Matricola libretto ──
+  const listaCorpo=righeFinali.map(r=>{
+    const nomeCompleto=r[6]||'—';   // colonna "Cognome e Nome"
+    const matricola=r[9]||'—';      // colonna "Matricola" (libretto)
+    return `${nomeCompleto} — ${matricola}`;
+  }).join('\n');
+
+  // firma automatica basata sull'utente loggato
+  const firmaMap={'Troiani R.':'Roberto Troiani','Ponticelli S.':'Sergio Ponticelli'};
+  const firma=firmaMap[currentUser]||currentUser||'';
+  const corpoEmail=`Buongiorno,\n\nVi inviamo quanto in oggetto.\n\nSessione: ${fmtData(s.Data)} — ${s.Luogo}\nPrenotati: ${nPrenotati}\n\n${listaCorpo}\n\n(Tabella completa in allegato PDF)\n\n\nCordiali saluti,\n\n${firma}`;
+
+  // ── STEP 3: apri Outlook ──
+  setTimeout(()=>{
+    const url=`mailto:${EMAIL_TO}?cc=${encodeURIComponent(EMAIL_CC)}&subject=${encodeURIComponent(oggetto)}&body=${encodeURIComponent(corpoEmail)}`;
+    window.location.href=url;
+  },600);
+
+  // ── STEP 4: salva data/ora invio su Supabase ──
+  try{
+    const now=new Date().toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    await sbPatch('Sessioni',_emailSessId,{email_inviata_at:now});
+    const idx=_sessioni.findIndex(x=>x.id===_emailSessId);
+    if(idx>=0)_sessioni[idx].email_inviata_at=now;
+    renderAdminSessioni();
+  }catch(e){console.warn('Errore salvataggio data email:',e);}
+
+  setTimeout(()=>{
+    toast('✅ PDF in Download + Outlook aperto — allega il PDF e invia');
+  },1200);
+}
+
+// ── Sincronizzazione automatica prenotazioni con DB ──
+async function sincronizzaPrenotazioni(){
+  try{
+    // prende tutte le prenotazioni con db_aggiornare=true
+    const daAggiornare=await sbGet('Prenotazioni','db_aggiornare=eq.true&select=id,matricola_aziendale');
+    if(!daAggiornare.length)return;
+    // per ogni prenotazione cerca il dipendente nel DB
+    for(const p of daAggiornare){
+      if(!p.matricola_aziendale)continue;
+      const dips=await sbGet('Dipendenti',`Matricola_Aziendale=eq.${encodeURIComponent(p.matricola_aziendale)}`);
+      if(!dips.length)continue;
+      const d=dips[0];
+      // aggiorna prenotazione con dati aggiornati
+      await sbPatch('Prenotazioni',p.id,{
+        cognome_nome:`${d.Cognome} ${d.Nome}`.trim(),
+        qualifica:d.Qualifica||'',
+        data_nascita:d.Data_di_Nascita||null,
+        db_aggiornare:false
+      });
+    }
+    // ricarica prenotazioni se siamo nella pagina riepilogo
+    if(_prenotazioni.length)await loadPrenotazioni();
+  }catch(e){console.warn('Errore sincronizzazione:',e);}
+}
+
+// ── Modifica prenotazione esistente ──────────────
+let _editPrenId=null;
+async function modificaPren(id){
+  const p=_prenotazioni.find(x=>x.id===id);
+  if(!p)return;
+  const s=_sessioni.find(x=>x.id===p.sessione_id);
+  if(!s)return;
+  _editPrenId=id;
+  // precarica dati nel modal prenotazione
+  selSessioneId=s.id;
+  selSessData=s.Data;
+  // apri modal
+  const modal=document.getElementById('modal-prenota');
+  document.getElementById('modal-sess-data').textContent=fmtData(s.Data);
+  document.getElementById('modal-sess-luogo').textContent=s.Luogo;
+  document.getElementById('modal-sess-posti').textContent=s.Posti_Totali-((_prenotazioni.filter(x=>x.sessione_id===s.id).length));
+  document.getElementById('modal-sess-op').textContent=p.operatore;
+  // cerca il marittimo nel DB
+  document.getElementById('mat-input').value=p.matricola_aziendale||'';
+  document.getElementById('note-input').value=p.note||'';
+  document.getElementById('minor-alert').style.display='none';
+  // popola scheda marittimo
+  const dips=p.matricola_aziendale?await sbGet('Dipendenti',`Matricola_Aziendale=eq.${encodeURIComponent(p.matricola_aziendale)}`):[];
+  const dip=dips[0]||null;
+  if(dip){
+    selMarittimo={
+      matricola_aziendale:dip.Matricola_Aziendale,
+      cognome_nome:`${dip.Cognome} ${dip.Nome}`.trim(),
+      qualifica:dip.Qualifica,
+      data_nascita:dip.Data_di_Nascita
+    };
+    mostraSchedaMarittimo(dip,s);
+  } else {
+    selMarittimo={matricola_aziendale:p.matricola_aziendale,cognome_nome:p.cognome_nome,qualifica:p.qualifica,data_nascita:p.data_nascita};
+    document.getElementById('scheda-marittimo').style.display='block';
+    document.getElementById('scheda-nome').textContent=p.cognome_nome||'—';
+    document.getElementById('scheda-sub').textContent=p.qualifica||'';
+  }
+  // seleziona nave
+  await buildNaveSelect();
+  const naveEl=document.getElementById('nave-select');
+  if(naveEl&&p.nave_assegnata)naveEl.value=p.nave_assegnata;
+  // esito AMM
+  if(isAdmin){
+    document.getElementById('amm-select').disabled=false;
+    document.getElementById('amm-select').value=p.esito_amm||'In attesa';
+  }
+  // cambia titolo bottone
+  const btn=document.getElementById('btn-conferma-pren');
+  if(btn){btn.textContent='💾 Aggiorna prenotazione';btn.disabled=false;}
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+async function salvaPrenotazione(){
+  if(_editPrenId){
+    // modalità MODIFICA
+    const note=document.getElementById('note-input').value.trim().slice(0,30);
+    const nave=document.getElementById('nave-select')?.value||'';
+    const esito=isAdmin?document.getElementById('amm-select').value:'In attesa';
+    try{
+      await sbPatch('Prenotazioni',_editPrenId,{note,nave_assegnata:nave,esito_amm:esito});
+      toast('✅ Prenotazione aggiornata');
+      chiudiPrenota();
+      await loadPrenotazioni();
+    }catch(e){toast('Errore: '+e.message,'error');}
+    return;
+  }
+  // modalità NUOVA — continua con la logica esistente
+  await confirmPrenota();
+}
+
+function chiudiPrenota(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  _editPrenId=null;
+  selMarittimo=null;
+  document.getElementById('mat-input').value='';
+  document.getElementById('note-input').value='';
+  document.getElementById('scheda-marittimo').style.display='none';
+  document.getElementById('minor-alert').style.display='none';
+  const btn=document.getElementById('btn-conferma-pren');
+  if(btn){btn.disabled=true;btn.textContent='Conferma prenotazione';}
+}
+async function aggiornaDestinatariEmail(){
+  try{
+    _emailDestinatari=await sbGet('EmailDestinatari','order=tipo,email');
+    const aList=_emailDestinatari.filter(d=>d.tipo==='A').map(d=>d.email);
+    const ccList=_emailDestinatari.filter(d=>d.tipo==='CC').map(d=>d.email);
+    EMAIL_TO=aList.length?aList[0]:'mdl@lineaambiente.it';
+    EMAIL_CC=ccList.join(',');
+    // aggiorna il modal HTML
+    const toEl=document.getElementById('me-to');
+    const ccEl=document.querySelector('.me-meta strong:nth-child(2)');
+    if(toEl)toEl.textContent=EMAIL_TO;
+  }catch(e){console.warn('Errore caricamento destinatari:',e);}
+}
+async function renderAdminEmail(){
+  const cont=document.getElementById('adm-email-list');
+  if(!cont)return;
+  try{
+    _emailDestinatari=await sbGet('EmailDestinatari','order=tipo,email');
+    document.getElementById('email-dest-count').textContent=
+      `${_emailDestinatari.length} destinatar${_emailDestinatari.length===1?'io':'i'}`;
+    if(!_emailDestinatari.length){
+      cont.innerHTML=`<div class="empty"><div class="empty-ico">📧</div><p>Nessun destinatario configurato.</p></div>`;
+      return;
+    }
+    cont.innerHTML=_emailDestinatari.map(d=>`
+      <div class="email-dest-item">
+        <span class="email-dest-tipo tipo-${d.tipo.toLowerCase()}">${d.tipo}:</span>
+        <span class="email-dest-addr">${d.email}</span>
+        <button class="btn btn-danger btn-sm" onclick="delEmailDest(${d.id})">🗑</button>
+      </div>`).join('');
+    // aggiorna le variabili live
+    await aggiornaDestinatariEmail();
+    // aggiorna il modal email con i nuovi destinatari
+    const ccEl=document.getElementById('me-cc-list');
+    if(ccEl)ccEl.textContent=EMAIL_CC.split(',').join(', ');
+  }catch(e){toast('Errore caricamento destinatari: '+e.message,'error');}
+}
+async function addEmailDest(){
+  const tipo=document.getElementById('ne-tipo').value;
+  const email=document.getElementById('ne-email').value.trim().toLowerCase();
+  if(!email||!email.includes('@')){toast('Inserisci un email valida','error');return;}
+  if(_emailDestinatari.find(d=>d.email===email)){toast('Email già presente','error');return;}
+  try{
+    await sbPost('EmailDestinatari',{tipo,email});
+    document.getElementById('ne-email').value='';
+    toast('✅ Destinatario aggiunto');
+    await renderAdminEmail();
+  }catch(e){toast('Errore: '+e.message,'error');}
+}
+async function delEmailDest(id){
+  const d=_emailDestinatari.find(x=>x.id===id);
+  if(!confirm(`Eliminare "${d?.email}"?`))return;
+  try{
+    await sbDelete('EmailDestinatari',id);
+    toast('Destinatario eliminato');
+    await renderAdminEmail();
+  }catch(e){toast('Errore: '+e.message,'error');}
+}
+
+// ══ INIT ══════════════════════════════════════════
+buildLoginGrid();
+</script>
+<!-- ══ SMART FOOTER FISSO ══ -->
+<div id="smart-footer">
+  <div class="smart-banner-sm">
+    <div style="position:relative;z-index:1;text-align:center">
+      <div class="smart-title-sm">S.M.A.R.T</div>
+      <div class="smart-sub-sm">Solutions</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

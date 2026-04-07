@@ -31,6 +31,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .smart-title-sm{font-family:'Cormorant Garamond',serif;font-size:.72rem;font-weight:600;color:#fff;letter-spacing:.15em;line-height:1;position:relative;z-index:1;}
 .smart-sub-sm{font-family:'Plus Jakarta Sans',sans-serif;font-size:.38rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.85);margin-top:1px;position:relative;z-index:1;}
 
+/* ── PASSWORD SCREEN ── */
+#pwd-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.pwd-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;width:380px;box-shadow:var(--shadow);text-align:center;}
+.pwd-logo{margin-bottom:1.2rem;}
+.pwd-title{font-size:1.1rem;font-weight:800;margin-bottom:.3rem;}
+.pwd-sub{font-size:.8rem;color:var(--muted);margin-bottom:1.5rem;}
+.pwd-input{width:100%;padding:11px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:.1em;margin-bottom:.8rem;transition:border-color .2s;}
+.pwd-input:focus{border-color:var(--accent);}
+#pwd-err{color:var(--red);font-size:.78rem;margin-bottom:.8rem;display:none;}
+
 /* ── LOGIN ── */
 #login-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;width:420px;box-shadow:var(--shadow);text-align:center;}
@@ -395,6 +405,24 @@ tbody tr.sess-past:hover{background:transparent;}
 <body>
 
 <!-- ══ LOGIN ══ -->
+<!-- ══ PASSWORD SCREEN ══ -->
+<div id="pwd-screen">
+  <div class="pwd-card">
+    <div class="smart-banner" style="margin-bottom:1.2rem">
+      <div class="smart-text" style="flex:1">
+        <div class="smart-title">S.M.A.R.T</div>
+        <div class="smart-sub">Solutions</div>
+      </div>
+    </div>
+    <div class="pwd-title">VMC 271</div>
+    <div class="pwd-sub">Inserisci la password per accedere</div>
+    <input class="pwd-input" type="password" id="pwd-input" placeholder="••••••••••"
+      onkeydown="if(event.key==='Enter')checkPassword()">
+    <div id="pwd-err">⚠️ Password non corretta</div>
+    <button class="btn btn-primary" style="width:100%;margin-top:.4rem" onclick="checkPassword()">Accedi →</button>
+  </div>
+</div>
+
 <div id="login-screen">
   <div class="login-card">
     <div class="smart-banner" style="margin-bottom:1.2rem">
@@ -811,6 +839,28 @@ tbody tr.sess-past:hover{background:transparent;}
 <div id="toast"></div>
 
 <script>
+// ══ PASSWORD ACCESSO ══════════════════════════════
+const APP_PWD='SmartSolutions135!';
+const PWD_KEY='vmc271_auth';
+function checkPassword(){
+  const val=document.getElementById('pwd-input').value;
+  if(val===APP_PWD){
+    localStorage.setItem(PWD_KEY,'1');
+    document.getElementById('pwd-screen').style.display='none';
+    document.getElementById('pwd-err').style.display='none';
+  }else{
+    document.getElementById('pwd-err').style.display='block';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+  }
+}
+// controlla se già autenticato
+(function(){
+  if(localStorage.getItem(PWD_KEY)==='1'){
+    document.getElementById('pwd-screen').style.display='none';
+  }
+})();
+
 // ══ SUPABASE ══════════════════════════════════════
 const SB_URL='https://rifezqqkbkxdxtexiyhb.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpZmV6cXFrYmt4ZHh0ZXhpeWhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMzUwNzQsImV4cCI6MjA5MDYxMTA3NH0.ILFoQbwLJ4zM7ch2-0MhMzlLCTOL8frZRu61aMdeZdA';

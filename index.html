@@ -78,7 +78,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .btn-amm{background:var(--amm-l);color:var(--amm);border:1px solid #c8d0f0;}
 .btn-amm:hover{background:#d8dcf8;}
 .btn-full{width:100%;}
-.btn-sm{padding:5px 12px;font-size:0.75rem;border-radius:7px;}
+.btn-sm{font-size:14px;width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;}
 .btn-lg{padding:12px 24px;font-size:.9rem;border-radius:12px;}
 
 /* ── HEADER ── */
@@ -330,6 +330,24 @@ tbody tr.sess-past:hover{background:transparent;}
 .amm-select:disabled{opacity:.5;cursor:not-allowed;}
 .amm-note-txt{font-size:.71rem;color:var(--muted);margin-top:5px;}
 .modal-footer{padding:.9rem 1.8rem 1.3rem;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
+.card-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;}
+.cfg-label{font-weight:700;font-size:.88rem;color:var(--text);margin-bottom:.3rem;}
+.cfg-hint{font-size:.72rem;color:var(--muted);margin-bottom:.6rem;}
+.cfg-hint code{background:var(--bg);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:.72rem;}
+.cfg-textarea{width:100%;padding:.7rem .9rem;border:1px solid var(--border);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--bg);resize:vertical;line-height:1.6;outline:none;transition:border-color .2s;}
+.cfg-textarea:focus{border-color:var(--accent);}
+.riepilogo-item.email-inviata{background:#f0faf3;border-left:3px solid #52b788;}
+.stat-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:1rem;}
+.stat-card{border-radius:10px;padding:.6rem .9rem;display:flex;align-items:center;gap:10px;}
+.stat-card-num{font-size:20px;font-weight:700;line-height:1;}
+.stat-card-lbl{font-size:.68rem;color:var(--muted);line-height:1.3;}
+.stat-card-default{background:var(--surface);}
+.stat-card-green{background:#f0faf3;border:1px solid #a5d6a7;}
+.stat-card-green .stat-card-num,.stat-card-green .stat-card-lbl{color:#2e7d32;}
+.btn-email{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;font-size:14px;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
+.btn-email:hover{background:#c8e6c9;}
+.btn-email.disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+.email-sent-ts{font-size:.68rem;color:#2e7d32;white-space:nowrap;text-align:right;}
 
 /* ── ADMIN ── */
 .adm-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.2rem;box-shadow:var(--shadow-s);}
@@ -453,7 +471,7 @@ tbody tr.sess-past:hover{background:transparent;}
       <span class="spinner"></span> Connessione…
     </div>
     <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v43 &nbsp;·&nbsp; 07.04.26
+      VMC 271 — v45 &nbsp;·&nbsp; 09.04.26
     </div>
   </div>
 </div>
@@ -482,6 +500,7 @@ tbody tr.sess-past:hover{background:transparent;}
 <nav id="app-nav" style="display:none">
   <button class="nav-tab active" onclick="showPage('sessioni',this)">Sessioni</button>
   <button class="nav-tab" onclick="showPage('riepilogo',this)">Riepilogo</button>
+  <button class="nav-tab" onclick="showPage('config-email',this)">✉️ Email</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('admin',this)">Admin</button>
 </nav>
 
@@ -511,7 +530,7 @@ tbody tr.sess-past:hover{background:transparent;}
       </table>
     </div>
     <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v43 &nbsp;·&nbsp; 7 aprile 2026
+      VMC 271 — v45 &nbsp;·&nbsp; 09.04.26
     </div>
   </div>
 
@@ -519,10 +538,24 @@ tbody tr.sess-past:hover{background:transparent;}
   <div class="page" id="page-riepilogo">
     <div class="page-hdr">
       <div>
-        <div class="page-title">Riepilogo Prenotazioni <span class="count-badge" id="pren-badge" style="display:none">0</span></div>
+        <div class="page-title">Riepilogo Prenotazioni</div>
         <div class="page-sub">Tutte le prenotazioni VMC</div>
       </div>
       <button class="btn btn-primary" style="font-size:.95rem;padding:.55rem 1.8rem;font-weight:600;" onclick="loadRiepilogo()">↻ Aggiorna</button>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card stat-card-default">
+        <div class="stat-card-num" id="stat-totale">—</div>
+        <div class="stat-card-lbl">Prenotazioni<br>totali</div>
+      </div>
+      <div class="stat-card stat-card-green">
+        <div class="stat-card-num" id="stat-email">—</div>
+        <div class="stat-card-lbl">Email<br>inviate</div>
+      </div>
+      <div class="stat-card stat-card-default">
+        <div class="stat-card-num" id="stat-da-inviare">—</div>
+        <div class="stat-card-lbl">Da<br>inviare</div>
+      </div>
     </div>
     <!-- Slider sessioni -->
     <div class="sess-slider-wrap">
@@ -686,6 +719,42 @@ tbody tr.sess-past:hover{background:transparent;}
     </div>
 
   </div><!-- /page-admin -->
+
+  <!-- PAGINA CONFIG EMAIL -->
+  <div class="page" id="page-config-email">
+    <div class="page-hdr">
+      <div>
+        <div class="page-title">✉️ Configurazione Email</div>
+        <div class="page-sub">Personalizza i testi e la firma per le email ai marittimi</div>
+      </div>
+    </div>
+    <div style="max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:1.2rem;">
+      <div class="card-section">
+        <div class="cfg-label">📍 Corpo email — Torre del Greco</div>
+        <div class="cfg-hint">Variabili disponibili: <code>[NOME]</code> = nome marittimo &nbsp;·&nbsp; <code>[DATA]</code> = giorno e data sessione</div>
+        <textarea id="cfg-body-tdg" class="cfg-textarea" rows="9"></textarea>
+      </div>
+      <div class="card-section">
+        <div class="cfg-label">📍 Corpo email — Livorno</div>
+        <div class="cfg-hint">Variabili disponibili: <code>[NOME]</code> = nome marittimo &nbsp;·&nbsp; <code>[DATA]</code> = giorno e data sessione</div>
+        <textarea id="cfg-body-liv" class="cfg-textarea" rows="9"></textarea>
+      </div>
+      <div class="card-section">
+        <div class="cfg-label">📋 Indirizzi CC (per conoscenza)</div>
+        <div class="cfg-hint">Separare più indirizzi con il punto e virgola <code>;</code> — vengono aggiunti automaticamente ad ogni email</div>
+        <input type="text" id="cfg-cc" class="cfg-textarea" style="resize:none;height:auto;padding:.6rem .9rem;font-family:monospace;font-size:.82rem;" placeholder="es. ufficio@moby.it;altro@tirrenia.it">
+      </div>
+      <div class="card-section">
+        <div class="cfg-label">✍️ La tua firma</div>
+        <div class="cfg-hint">Inserisci il tuo nome, ruolo e contatti come vuoi che appaiano nell'email</div>
+        <textarea id="cfg-firma" class="cfg-textarea" rows="4"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="resetCfgEmail()">↺ Ripristina testi base</button>
+        <button class="btn btn-primary" onclick="salvaCfgEmail()">💾 Salva configurazione</button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <!-- ══ MODAL PRENOTAZIONE ══ -->
@@ -974,6 +1043,7 @@ async function initApp(){
   const canAdmin=ADMIN_USERS.some(u=>u.name===currentUser);
   if(canAdmin)document.querySelectorAll('.admin-only').forEach(el=>el.style.display='');
   setConnDot('on');
+  checkCfgEmailVersion();
   await loadSessioni();
   // sincronizzazione automatica prenotazioni con DB dipendenti
   sincronizzaPrenotazioni();
@@ -1042,6 +1112,7 @@ async function showPage(id,tab){
   tab.classList.add('active');
   if(id==='sessioni')  await loadSessioni();
   if(id==='riepilogo') await loadRiepilogo();
+  if(id==='config-email') loadCfgEmail();
   if(id==='admin')     await loadAdmin();
 }
 function showAdmPanel(id){
@@ -1062,12 +1133,13 @@ async function loadSessioni(){
     _sessioni=await sbGet('Sessioni','order=Data');
     _prenotazioni=await sbGet('Prenotazioni','select=id,sessione_id,db_aggiornare');
     renderSessioni();
-    // banner DB
     const hasDirty=_prenotazioni.some(p=>p.db_aggiornare);
     document.getElementById('banner-db').style.display=hasDirty?'flex':'none';
     setConnDot('on');
+    toast('✅ Sessioni aggiornate');
   }catch(e){
     setConnDot('off');
+    toast('⚠️ Errore aggiornamento: '+e.message,'error');
     document.getElementById('sess-tbody').innerHTML=`<tr class="empty-row"><td colspan="4">⚠️ Errore: ${e.message}</td></tr>`;
   }
 }
@@ -1439,7 +1511,15 @@ async function loadRiepilogo(){
   setConnDot('loading');
   try{
     _sessioni=await sbGet('Sessioni','order=Data');
-    _prenotazioni=await sbGet('Prenotazioni','order=created_at.desc');
+    _prenotazioni=await sbGet('Prenotazioni','order=created_at.desc&select=*');
+    // Arricchisce prenotazioni con email marittimo da Dipendenti
+    const mats=[...new Set(_prenotazioni.map(p=>p.matricola_aziendale).filter(Boolean))];
+    if(mats.length){
+      const dipsEmail=await sbGet('Dipendenti','Matricola_Aziendale=in.('+mats.map(m=>encodeURIComponent(m)).join(',')+')&select=Matricola_Aziendale,Email');
+      const emailMap={};
+      dipsEmail.forEach(d=>{ emailMap[d.Matricola_Aziendale]=d.Email||null; });
+      _prenotazioni=_prenotazioni.map(p=>({...p, email_marittimo: emailMap[p.matricola_aziendale]||null}));
+    }
     fillOpFilter();
     initSlider();
     renderRiepilogo();
@@ -1463,13 +1543,22 @@ function renderRiepilogo(){
 
   if(!filtered.length){
     cont.innerHTML=`<div class="empty"><div class="empty-ico">📋</div><p>Nessuna prenotazione trovata.</p></div>`;
-    document.getElementById('pren-badge').style.display='none';
+
+    const stT=document.getElementById('stat-totale');const stE=document.getElementById('stat-email');const stD=document.getElementById('stat-da-inviare');
+    if(stT)stT.textContent='0';if(stE)stE.textContent='0';if(stD)stD.textContent='0';
     return;
   }
   // aggiorna badge
-  const badge=document.getElementById('pren-badge');
-  badge.textContent=filtered.length;
-  badge.style.display='inline-flex';
+
+  // aggiorna stat cards
+  const emailInviate=filtered.filter(p=>p.email_inviata_at).length;
+  const daInviare=filtered.length-emailInviate;
+  const stTot=document.getElementById('stat-totale');
+  const stEmail=document.getElementById('stat-email');
+  const stDa=document.getElementById('stat-da-inviare');
+  if(stTot)stTot.textContent=filtered.length;
+  if(stEmail)stEmail.textContent=emailInviate;
+  if(stDa)stDa.textContent=daInviare;
 
   const ammCls={
     'Idoneo':'amm-idoneo','Idoneo con prescrizioni':'amm-restrizioni',
@@ -1487,7 +1576,7 @@ function renderRiepilogo(){
       :(p.nave_assegnata||'—');
 
     return `
-      <div class="riepilogo-item">
+      <div class="riepilogo-item${p.email_inviata_at?' email-inviata':''}">
         <div class="riepilogo-row">
           <div>
             <div class="rc-nome">${p.cognome_nome||'—'}</div>
@@ -1505,10 +1594,25 @@ function renderRiepilogo(){
             <span style="font-size:.65rem">da ${p.operatore}</span>
             ${p.created_at?`<br><span style="font-size:.62rem;color:var(--muted)">${new Date(p.created_at).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`:''}
           </div>
-          <div class="rc-actions">
-            ${canEdit?`<button class="btn btn-warn btn-sm" onclick="modificaPren(${p.id})" title="Modifica">✏️</button>`:''}
-            ${canEdit?`<button class="btn btn-danger btn-sm" onclick="delPren(${p.id})" title="Elimina">🗑</button>`:''}
-            ${canEdit&&p.nave_assegnata==='Da definire'?`<button class="btn btn-warn btn-sm" onclick="toggleEditNave(${p.id})">🚢</button>`:''}
+          <div class="rc-actions" style="flex-direction:column;align-items:flex-end;gap:4px;">
+            <div style="display:flex;gap:5px;align-items:center;">
+              ${canEdit?`<button class="btn btn-warn btn-sm" onclick="modificaPren(${p.id})" title="Modifica">✏️</button>`:''}
+              ${canEdit?`<button class="btn btn-danger btn-sm" onclick="delPren(${p.id})" title="Elimina">🗑</button>`:''}
+              ${canEdit&&p.nave_assegnata==='Da definire'?`<button class="btn btn-warn btn-sm" onclick="toggleEditNave(${p.id})">🚢</button>`:''}
+              ${(()=>{
+                if(!canEdit) return '';
+                const hasEmail=!!(p.email_marittimo);
+                const clsDis=hasEmail?'':'disabled';
+                const onclick=hasEmail?`onclick="inviaEmailMarittimo(${p.id})"`:'';
+                const title=hasEmail?'Invia email al marittimo':'Email non disponibile in anagrafica';
+                return `<button class="btn-email ${clsDis}" ${onclick} title="${title}">📧</button>`;
+              })()}
+            </div>
+            ${(()=>{
+              if(!canEdit||!p.email_inviata_at) return '';
+              const ts=new Date(p.email_inviata_at).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+              return `<span class="email-sent-ts">${ts}</span>`;
+            })()}
           </div>
         </div>
         ${p.db_aggiornare?`<div class="rc-db-warn">⚠️ Dati marittimo non in DB</div>`:''}
@@ -2294,6 +2398,146 @@ async function delEmailDest(id){
 
 // ══ INIT ══════════════════════════════════════════
 buildLoginGrid();
+
+// ══ CONFIG EMAIL ══════════════════════════════════
+const CFG_EMAIL_BASE_TDG = `Buongiorno [NOME],
+
+Le invio istruzioni per la VMC (Visita del Medico Competente). La chiediamo di presentarsi al Centro Safety Nature il *[DATA]* alle ore 07.30, in Via Cesare Battisti, 22 – Torre del Greco (NA).
+
+A digiuno, vescica piena, SENZA AVER FUMATO, DA ALMENO 3-4 ORE prima della visita.
+
+Si ringrazia per la Vs gentile collaborazione.
+
+>>> SI RICHIEDE CONFERMA RICEZIONE MAIL. <<<
+
+Cordiali saluti,
+
+
+[FIRMA]`;
+const CFG_EMAIL_BASE_LIV = `Buongiorno [NOME],
+
+Come da conversazione appena intercorsa Le confermo che il *[DATA]* ha la Visita del Medico Competente prenotata presso il centro INLAB alle ore 7.30, in Via Provinciale Pisana n. 617 a Livorno.
+
+Si dovrà presentare a digiuno, vescica piena, SENZA AVER FUMATO, DA ALMENO 3-4 ORE prima della visita.
+
+>>> SI RICHIEDE CONFERMA RICEZIONE MAIL. <<<
+
+Cordiali saluti,
+
+
+[FIRMA]`;
+
+function getCfgKey(field){
+  return 'vmc271_email_' + (currentUser||'default') + '_' + field;
+}
+
+const CFG_EMAIL_VERSION = 'v45'; // aggiorna ad ogni modifica testi base
+
+function checkCfgEmailVersion(){
+  const savedVer = localStorage.getItem('vmc271_email_version_' + (currentUser||'default'));
+  if(savedVer !== CFG_EMAIL_VERSION){
+    // testi base cambiati — forza reset silenzioso
+    localStorage.setItem(getCfgKey('tdg'), CFG_EMAIL_BASE_TDG);
+    localStorage.setItem(getCfgKey('liv'), CFG_EMAIL_BASE_LIV);
+    localStorage.setItem('vmc271_email_version_' + (currentUser||'default'), CFG_EMAIL_VERSION);
+    // NON resetta firma e CC — sono personali
+    console.log('Testi email aggiornati alla versione', CFG_EMAIL_VERSION);
+  }
+}
+
+const CC_DEFAULT = {
+  'Troiani R.':   'armamentohotel@moby.it',
+  'Voliani L.':   'armamentohotel@moby.it',
+  "D'iseppi M.":  'armamentohotel@moby.it',
+  'Farina R.':    'armamentocopmac@moby.it;armamentocoperta@tirrenia.it',
+  'Sabatini A.':  'armamentocamera-cucina@tirrenia.it',
+  'Giglio P.':    'armamentocopmac@moby.it;armamentocoperta@tirrenia.it',
+  'Guiggi E.':    'armamentocopmac@moby.it;armamentocoperta@tirrenia.it',
+  'Ponticelli S.':'armamentocopmac@moby.it;armamentocoperta@tirrenia.it',
+};
+
+function getCcDefault(){
+  return CC_DEFAULT[currentUser] || '';
+}
+
+function loadCfgEmail(){
+  checkCfgEmailVersion();
+  const tdg = localStorage.getItem(getCfgKey('tdg')) || CFG_EMAIL_BASE_TDG;
+  const liv = localStorage.getItem(getCfgKey('liv')) || CFG_EMAIL_BASE_LIV;
+  const firma = localStorage.getItem(getCfgKey('firma')) || (currentUser||'');
+  const cc = localStorage.getItem(getCfgKey('cc')) || getCcDefault();
+  document.getElementById('cfg-body-tdg').value = tdg;
+  document.getElementById('cfg-body-liv').value = liv;
+  document.getElementById('cfg-firma').value = firma;
+  document.getElementById('cfg-cc').value = cc;
+}
+
+function salvaCfgEmail(){
+  localStorage.setItem(getCfgKey('tdg'), document.getElementById('cfg-body-tdg').value);
+  localStorage.setItem(getCfgKey('liv'), document.getElementById('cfg-body-liv').value);
+  localStorage.setItem(getCfgKey('firma'), document.getElementById('cfg-firma').value);
+  localStorage.setItem(getCfgKey('cc'), document.getElementById('cfg-cc').value);
+  toast('✅ Configurazione email salvata');
+}
+
+function resetCfgEmail(){
+  if(!confirm('Ripristinare i testi base? Le tue modifiche andranno perse.')) return;
+  document.getElementById('cfg-body-tdg').value = CFG_EMAIL_BASE_TDG;
+  document.getElementById('cfg-body-liv').value = CFG_EMAIL_BASE_LIV;
+  document.getElementById('cfg-firma').value = currentUser||'';
+  document.getElementById('cfg-cc').value = getCcDefault();
+  salvaCfgEmail();
+}
+
+function fmtDataEstesa(dateStr){
+  if(!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  const giorni = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  const mesi = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  return giorni[d.getDay()] + ' ' + d.getDate() + ' ' + mesi[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+async function inviaEmailMarittimo(id){
+  const p = _prenotazioni.find(x => x.id === id);
+  if(!p) return;
+  if(!p.email_marittimo){ toast('⚠️ Email non disponibile per questo marittimo','error'); return; }
+  const s = _sessioni.find(x => x.id === p.sessione_id);
+  if(!s) return;
+
+  // Determina luogo: TDG o Livorno
+  const luogo = (s.Luogo||'').toLowerCase();
+  const isTdg = luogo.includes('greco') || luogo.includes('torre');
+  const bodyTemplate = isTdg
+    ? (localStorage.getItem(getCfgKey('tdg')) || CFG_EMAIL_BASE_TDG)
+    : (localStorage.getItem(getCfgKey('liv')) || CFG_EMAIL_BASE_LIV);
+  const firma = localStorage.getItem(getCfgKey('firma')) || currentUser || '';
+
+  // Sostituisce variabili — nome con maiuscole iniziali (es. Mario Rossi)
+  const nomeMarittimo = (p.cognome_nome||'')
+    .split(' ').reverse().join(' ')
+    .toLowerCase()
+    .replace(/\b\w/g, c => c.toUpperCase());
+  const dataEstesa = fmtDataEstesa(s.Data);
+  const body = bodyTemplate
+    .replace(/\[NOME\]/g, nomeMarittimo)
+    .replace(/\[DATA\]/g, dataEstesa)
+    .replace(/\[FIRMA\]/g, firma);
+
+  const cc = localStorage.getItem(getCfgKey('cc')) || getCcDefault();
+  const subject = encodeURIComponent('VMC 271 — Convocazione Visita Medico Competente');
+  const bodyEncoded = encodeURIComponent(body);
+  const ccEncoded = cc ? encodeURIComponent(cc.replace(/;/g,',')) : '';
+  const mailto = `mailto:${p.email_marittimo}${ccEncoded?'?cc='+ccEncoded+'&':'?'}subject=${subject}&body=${bodyEncoded}`;
+  window.location.href = mailto;
+
+  // Salva email_inviata_at su Supabase
+  try{
+    await sbPatch('Prenotazioni', id, {email_inviata_at: new Date().toISOString()});
+    await loadRiepilogo();
+    await loadSessioni();
+  } catch(e){ console.warn('Errore salvataggio email_inviata_at:', e.message); }
+}
+
 </script>
 <!-- ══ SMART FOOTER FISSO ══ -->
 <div id="smart-footer">

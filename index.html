@@ -126,6 +126,7 @@ tbody tr.sess-full:hover{background:transparent;}
 tbody tr.sess-past{cursor:default;opacity:.42;filter:grayscale(.4);}
 tbody tr.sess-past:hover{background:transparent;}
 .badge-past{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:middle;}
+.dot-db-warn{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e53935;margin-left:7px;vertical-align:middle;flex-shrink:0;}
 .td-data-main{font-weight:700;font-size:0.9rem;}
 .td-data-day{font-size:0.71rem;color:var(--muted);margin-top:2px;text-transform:capitalize;}
 .td-nota-sess{font-size:0.7rem;color:var(--orange);margin-top:3px;font-style:italic;}
@@ -471,7 +472,7 @@ tbody tr.sess-past:hover{background:transparent;}
       <span class="spinner"></span> Connessione…
     </div>
     <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v45 &nbsp;·&nbsp; 09.04.26
+      VMC 271 — v47 &nbsp;·&nbsp; 09.04.26
     </div>
   </div>
 </div>
@@ -530,7 +531,7 @@ tbody tr.sess-past:hover{background:transparent;}
       </table>
     </div>
     <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v45 &nbsp;·&nbsp; 09.04.26
+      VMC 271 — v47 &nbsp;·&nbsp; 09.04.26
     </div>
   </div>
 
@@ -683,29 +684,22 @@ tbody tr.sess-past:hover{background:transparent;}
     <div class="adm-panel" id="adm-panel-email">
       <div class="adm-card">
         <div class="adm-card-title">📧 Gestione Destinatari Email</div>
-        <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem">Gestisci i destinatari delle email di convocazione. Il primo indirizzo in <strong>A:</strong> è il destinatario principale.</p>
-        <!-- aggiungi destinatario -->
-        <div class="adm-add-row">
-          <div class="form-group">
-            <label>Tipo</label>
-            <select class="societa-select" id="ne-tipo">
-              <option value="A">A:</option>
-              <option value="CC">CC:</option>
-            </select>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem">Destinatari delle email di convocazione PDF. Separare più indirizzi con <strong>;</strong></p>
+        <div class="form-group" style="margin-bottom:1rem">
+          <label style="font-weight:700;color:var(--accent)">A: — Destinatario principale</label>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <input class="form-input" type="text" id="email-to-input" placeholder="es. ufficio@azienda.it" style="flex:1">
+            <button class="btn btn-primary" onclick="salvaEmailTo()" style="height:40px;padding:0 16px;white-space:nowrap">💾 Salva</button>
           </div>
-          <div class="form-group" style="flex:1">
-            <label>Indirizzo email</label>
-            <input class="form-input" type="email" id="ne-email" placeholder="es. nome@azienda.it"
-              onkeydown="if(event.key==='Enter')addEmailDest()">
+        </div>
+        <div class="form-group">
+          <label style="font-weight:700;color:var(--amm)">CC: — Per conoscenza</label>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <input class="form-input" type="text" id="email-cc-input" placeholder="es. uno@moby.it;due@tirrenia.it" style="flex:1;font-family:'DM Mono',monospace;font-size:.82rem">
+            <button class="btn btn-primary" onclick="salvaEmailCc()" style="height:40px;padding:0 16px;white-space:nowrap">💾 Salva</button>
           </div>
-          <button class="btn btn-primary" onclick="addEmailDest()" style="height:40px;padding:0 16px;align-self:flex-end">＋ Aggiungi</button>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Separare più indirizzi con ; senza spazi</div>
         </div>
-        <div class="divider"></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:.8rem">
-          <div style="font-size:.88rem;font-weight:700">Destinatari configurati</div>
-          <div id="email-dest-count" style="font-size:.75rem;color:var(--muted)"></div>
-        </div>
-        <div id="adm-email-list"></div>
       </div>
     </div>
 
@@ -1157,8 +1151,9 @@ function renderSessioni(){
     if(past){trCls='sess-past';click='';}
     else if(isFull){trCls='sess-full';click='';}
     else{trCls='sess-row';click=` onclick="apriPrenota(${s.id})"` ;}
+    const hasDirty=_prenotazioni.some(p=>p.sessione_id===s.id&&p.db_aggiornare);
     return `<tr class="${trCls}"${click}>
-      <td><div class="td-data-main">${fmtData(s.Data)}${past?`<span class="badge-past">Conclusa</span>`:''}</div><div class="td-data-day">${fmtGiorno(s.Data)}</div>${s.Nota?`<div class="td-nota-sess">📌 ${s.Nota}</div>`:''}</td>
+      <td><div class="td-data-main" style="display:flex;align-items:center;gap:4px;">${fmtData(s.Data)}${past?`<span class="badge-past">Conclusa</span>`:''} ${hasDirty?`<span class="dot-db-warn" title="Matricole da aggiornare nel DB"></span>`:''}</div><div class="td-data-day">${fmtGiorno(s.Data)}</div>${s.Nota?`<div class="td-nota-sess">📌 ${s.Nota}</div>`:''}</td>
       <td>${s.Luogo||'—'}</td>
       <td class="td-num">${s.Posti_Totali}</td>
       <td class="td-num ${libCls}">${liberi}${!past&&isFull?' <span class="esaurito-label">Esaurito</span>':''}</td>
@@ -2206,7 +2201,8 @@ async function invioEmail(){
 
   // ── STEP 3: apri Outlook ──
   setTimeout(()=>{
-    const url=`mailto:${EMAIL_TO}?cc=${encodeURIComponent(EMAIL_CC)}&subject=${encodeURIComponent(oggetto)}&body=${encodeURIComponent(corpoEmail)}`;
+    const ccMailto=EMAIL_CC.split(/[;,]+/).map(s=>encodeURIComponent(s.trim())).filter(Boolean).join('%3B');
+    const url=`mailto:${EMAIL_TO}?cc=${ccMailto}&subject=${encodeURIComponent(oggetto)}&body=${encodeURIComponent(corpoEmail)}`;
     window.location.href=url;
   },600);
 
@@ -2343,7 +2339,7 @@ async function aggiornaDestinatariEmail(){
     const aList=_emailDestinatari.filter(d=>d.tipo==='A').map(d=>d.email);
     const ccList=_emailDestinatari.filter(d=>d.tipo==='CC').map(d=>d.email);
     EMAIL_TO=aList.length?aList[0]:'mdl@lineaambiente.it';
-    EMAIL_CC=ccList.join(',');
+    EMAIL_CC=ccList.join(';');
     // aggiorna il modal HTML
     const toEl=document.getElementById('me-to');
     const ccEl=document.querySelector('.me-meta strong:nth-child(2)');
@@ -2351,47 +2347,41 @@ async function aggiornaDestinatariEmail(){
   }catch(e){console.warn('Errore caricamento destinatari:',e);}
 }
 async function renderAdminEmail(){
-  const cont=document.getElementById('adm-email-list');
-  if(!cont)return;
   try{
     _emailDestinatari=await sbGet('EmailDestinatari','order=tipo,email');
-    document.getElementById('email-dest-count').textContent=
-      `${_emailDestinatari.length} destinatar${_emailDestinatari.length===1?'io':'i'}`;
-    if(!_emailDestinatari.length){
-      cont.innerHTML=`<div class="empty"><div class="empty-ico">📧</div><p>Nessun destinatario configurato.</p></div>`;
-      return;
-    }
-    cont.innerHTML=_emailDestinatari.map(d=>`
-      <div class="email-dest-item">
-        <span class="email-dest-tipo tipo-${d.tipo.toLowerCase()}">${d.tipo}:</span>
-        <span class="email-dest-addr">${d.email}</span>
-        <button class="btn btn-danger btn-sm" onclick="delEmailDest(${d.id})">🗑</button>
-      </div>`).join('');
-    // aggiorna le variabili live
+    // Popola campo A
+    const aList=_emailDestinatari.filter(d=>d.tipo==='A').map(d=>d.email);
+    const toEl=document.getElementById('email-to-input');
+    if(toEl)toEl.value=aList.join(';');
+    // Popola campo CC
+    const ccList=_emailDestinatari.filter(d=>d.tipo==='CC').map(d=>d.email);
+    const ccEl=document.getElementById('email-cc-input');
+    if(ccEl)ccEl.value=ccList.join(';');
     await aggiornaDestinatariEmail();
-    // aggiorna il modal email con i nuovi destinatari
-    const ccEl=document.getElementById('me-cc-list');
-    if(ccEl)ccEl.textContent=EMAIL_CC.split(',').join(', ');
   }catch(e){toast('Errore caricamento destinatari: '+e.message,'error');}
 }
-async function addEmailDest(){
-  const tipo=document.getElementById('ne-tipo').value;
-  const email=document.getElementById('ne-email').value.trim().toLowerCase();
-  if(!email||!email.includes('@')){toast('Inserisci un email valida','error');return;}
-  if(_emailDestinatari.find(d=>d.email===email)){toast('Email già presente','error');return;}
+async function salvaEmailTo(){
+  const val=document.getElementById('email-to-input').value.trim();
+  const emails=val.split(/[;,]+/).map(s=>s.trim()).filter(s=>s.includes('@'));
+  if(!emails.length){toast('Nessun indirizzo valido','error');return;}
   try{
-    await sbPost('EmailDestinatari',{tipo,email});
-    document.getElementById('ne-email').value='';
-    toast('✅ Destinatario aggiunto');
+    // Elimina tutti gli A esistenti e reinserisce
+    const existing=_emailDestinatari.filter(d=>d.tipo==='A');
+    for(const d of existing) await sbDelete('EmailDestinatari',d.id);
+    for(const e of emails) await sbPost('EmailDestinatari',{tipo:'A',email:e.toLowerCase()});
+    toast('✅ Destinatario A salvato');
     await renderAdminEmail();
   }catch(e){toast('Errore: '+e.message,'error');}
 }
-async function delEmailDest(id){
-  const d=_emailDestinatari.find(x=>x.id===id);
-  if(!confirm(`Eliminare "${d?.email}"?`))return;
+async function salvaEmailCc(){
+  const val=document.getElementById('email-cc-input').value.trim();
+  const emails=val.split(/[;,]+/).map(s=>s.trim()).filter(s=>s.includes('@'));
   try{
-    await sbDelete('EmailDestinatari',id);
-    toast('Destinatario eliminato');
+    // Elimina tutti i CC esistenti e reinserisce
+    const existing=_emailDestinatari.filter(d=>d.tipo==='CC');
+    for(const d of existing) await sbDelete('EmailDestinatari',d.id);
+    for(const e of emails) await sbPost('EmailDestinatari',{tipo:'CC',email:e.toLowerCase()});
+    toast('✅ Indirizzi CC salvati');
     await renderAdminEmail();
   }catch(e){toast('Errore: '+e.message,'error');}
 }
@@ -2465,7 +2455,8 @@ function loadCfgEmail(){
   const tdg = localStorage.getItem(getCfgKey('tdg')) || CFG_EMAIL_BASE_TDG;
   const liv = localStorage.getItem(getCfgKey('liv')) || CFG_EMAIL_BASE_LIV;
   const firma = localStorage.getItem(getCfgKey('firma')) || (currentUser||'');
-  const cc = localStorage.getItem(getCfgKey('cc')) || getCcDefault();
+  const ccRaw = localStorage.getItem(getCfgKey('cc')) || getCcDefault();
+  const cc = ccRaw.split(/[;,]+/).map(s=>s.trim()).filter(Boolean).join(';');
   document.getElementById('cfg-body-tdg').value = tdg;
   document.getElementById('cfg-body-liv').value = liv;
   document.getElementById('cfg-firma').value = firma;
@@ -2523,11 +2514,13 @@ async function inviaEmailMarittimo(id){
     .replace(/\[DATA\]/g, dataEstesa)
     .replace(/\[FIRMA\]/g, firma);
 
-  const cc = localStorage.getItem(getCfgKey('cc')) || getCcDefault();
+  const ccRaw = localStorage.getItem(getCfgKey('cc')) || getCcDefault();
+  const cc = ccRaw.split(/[;,]+/).map(s=>s.trim()).filter(Boolean).join(';');
   const subject = encodeURIComponent('VMC 271 — Convocazione Visita Medico Competente');
   const bodyEncoded = encodeURIComponent(body);
-  const ccEncoded = cc ? encodeURIComponent(cc.replace(/;/g,',')) : '';
-  const mailto = `mailto:${p.email_marittimo}${ccEncoded?'?cc='+ccEncoded+'&':'?'}subject=${subject}&body=${bodyEncoded}`;
+  const ccList = cc ? cc.split(/[;,]+/).map(s=>s.trim()).filter(Boolean) : [];
+  const ccParams = ccList.length ? 'cc=' + ccList.map(s=>encodeURIComponent(s)).join('%3B') : '';
+  const mailto = `mailto:${p.email_marittimo}?${ccParams?ccParams+'&':''}subject=${subject}&body=${bodyEncoded}`;
   window.location.href = mailto;
 
   // Salva email_inviata_at su Supabase

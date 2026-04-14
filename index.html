@@ -338,13 +338,16 @@ tbody tr.sess-past:hover{background:transparent;}
 .cfg-textarea{width:100%;padding:.7rem .9rem;border:1px solid var(--border);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;color:var(--text);background:var(--bg);resize:vertical;line-height:1.6;outline:none;transition:border-color .2s;}
 .cfg-textarea:focus{border-color:var(--accent);}
 .riepilogo-item.email-inviata{background:#f0faf3;border-left:3px solid #52b788;}
-.stat-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:1rem;}
-.stat-card{border-radius:10px;padding:.6rem .9rem;display:flex;align-items:center;gap:10px;}
-.stat-card-num{font-size:20px;font-weight:700;line-height:1;}
-.stat-card-lbl{font-size:.68rem;color:var(--muted);line-height:1.3;}
+.stat-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:1rem;}
+.stat-card{border-radius:8px;padding:.4rem .6rem;display:flex;flex-direction:column;gap:2px;}
+.stat-card-num{font-size:17px;font-weight:700;line-height:1;}
+.stat-card-lbl{font-size:.62rem;color:var(--muted);line-height:1.3;}
 .stat-card-default{background:var(--surface);}
 .stat-card-green{background:#f0faf3;border:1px solid #a5d6a7;}
 .stat-card-green .stat-card-num,.stat-card-green .stat-card-lbl{color:#2e7d32;}
+.stat-card-attesa{background:#fdf4ff;border:1px solid #d8b4fe;}
+.stat-card-attesa .stat-card-num,.stat-card-attesa .stat-card-lbl{color:#6b21a8;}
+.stat-card-attesa-sub{font-size:.55rem;color:#9333ea;margin-top:1px;}
 .btn-email{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;font-size:14px;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .btn-email:hover{background:#c8e6c9;}
 .btn-email.disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
@@ -472,8 +475,9 @@ tbody tr.sess-past:hover{background:transparent;}
       <span class="spinner"></span> Connessione…
     </div>
     <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v47 &nbsp;·&nbsp; 09.04.26
+      VMC 271 — v49 &nbsp;·&nbsp; 14.04.26
     </div>
+    <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
 </div>
 
@@ -503,7 +507,28 @@ tbody tr.sess-past:hover{background:transparent;}
   <button class="nav-tab" onclick="showPage('riepilogo',this)">Riepilogo</button>
   <button class="nav-tab" onclick="showPage('config-email',this)">✉️ Email</button>
   <button class="nav-tab admin-only" style="display:none" onclick="showPage('admin',this)">Admin</button>
+  <button id="btn-help" onclick="toggleHelp()" title="Aiuto" style="margin-left:auto;margin-right:6px;width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:var(--accent);color:#fff;font-size:.9rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center;box-shadow:0 2px 6px rgba(0,100,180,.25);">?</button>
 </nav>
+<!-- Pannello aiuto -->
+<div id="help-panel" style="display:none;position:fixed;top:56px;right:10px;z-index:900;width:280px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.13);padding:1rem 1.1rem;max-height:80vh;overflow-y:auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+    <div style="font-size:.88rem;font-weight:800;color:var(--text)">Guida rapida VMC 271</div>
+    <button onclick="toggleHelp()" style="background:none;border:none;font-size:1rem;cursor:pointer;color:var(--muted)">✕</button>
+  </div>
+  <div style="font-size:.78rem;line-height:1.6;color:var(--text)">
+    <div style="font-weight:800;color:var(--accent);margin-bottom:2px;margin-top:.5rem">📅 Sessioni</div>
+    <div style="color:var(--muted);margin-bottom:.4rem">Visualizza le sessioni VMC disponibili. Clicca su una sessione per aprire il form di prenotazione e inserire un marittimo.</div>
+    <div style="font-weight:800;color:var(--accent);margin-bottom:2px;margin-top:.5rem">📋 Riepilogo</div>
+    <div style="color:var(--muted);margin-bottom:.4rem">Vedi tutte le prenotazioni suddivise per sessione. Usa lo slider in cima per filtrare per sessione. Puoi modificare (✏️), eliminare (🗑) o inviare l'email di convocazione (📧) sulle tue prenotazioni.</div>
+    <div style="font-weight:800;color:var(--accent);margin-bottom:2px;margin-top:.5rem">✉️ Email</div>
+    <div style="color:var(--muted);margin-bottom:.4rem">Configura il testo dell'email per Torre del Greco e Livorno, gli indirizzi CC e la tua firma personale. Le impostazioni sono salvate sul tuo PC.</div>
+    <div style="font-weight:800;color:var(--accent);margin-bottom:2px;margin-top:.5rem">🔒 Admin</div>
+    <div style="color:var(--muted);margin-bottom:.4rem">Solo per Troiani R. e Ponticelli S. Permette di gestire sessioni VMC, inserire esiti, gestire navi, luoghi e destinatari email. Include l'invio della convocazione PDF.</div>
+    <div style="border-top:1px solid var(--border);margin-top:.8rem;padding-top:.6rem;font-size:.7rem;color:var(--muted)">
+      <b>Simboli utili:</b> 🔴 = matricola da aggiornare &nbsp;·&nbsp; 🟢 = sessione riaperta &nbsp;·&nbsp; Badge arancione = aggiornamento DB richiesto
+    </div>
+  </div>
+</div>
 
 <!-- ══ MAIN ══ -->
 <main id="app-main" style="display:none">
@@ -531,8 +556,9 @@ tbody tr.sess-past:hover{background:transparent;}
       </table>
     </div>
     <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v47 &nbsp;·&nbsp; 09.04.26
+      VMC 271 — v49 &nbsp;·&nbsp; 14.04.26
     </div>
+    <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
 
   <!-- PAGINA 2 — RIEPILOGO -->
@@ -547,15 +573,20 @@ tbody tr.sess-past:hover{background:transparent;}
     <div class="stat-cards">
       <div class="stat-card stat-card-default">
         <div class="stat-card-num" id="stat-totale">—</div>
-        <div class="stat-card-lbl">Prenotazioni<br>totali</div>
+        <div class="stat-card-lbl">Totali</div>
       </div>
       <div class="stat-card stat-card-green">
         <div class="stat-card-num" id="stat-email">—</div>
-        <div class="stat-card-lbl">Email<br>inviate</div>
+        <div class="stat-card-lbl">Email inviate</div>
       </div>
       <div class="stat-card stat-card-default">
         <div class="stat-card-num" id="stat-da-inviare">—</div>
-        <div class="stat-card-lbl">Da<br>inviare</div>
+        <div class="stat-card-lbl">Da inviare</div>
+      </div>
+      <div class="stat-card stat-card-attesa">
+        <div class="stat-card-num" id="stat-attesa">—</div>
+        <div class="stat-card-lbl">Esiti in attesa</div>
+        <div class="stat-card-attesa-sub" id="stat-attesa-sub"></div>
       </div>
     </div>
     <!-- Slider sessioni -->
@@ -612,7 +643,7 @@ tbody tr.sess-past:hover{background:transparent;}
     <!-- panel inserimento esiti -->
     <div class="adm-panel" id="adm-panel-esiti">
       <div class="adm-card">
-        <div class="adm-card-title">✅ Inserimento Esiti</div>
+        <div class="adm-card-title">✅ Inserimento Esiti <span id="badge-attesa-esiti" style="display:none;font-size:.75rem;font-weight:600;background:#fdf4ff;border:1px solid #d8b4fe;color:#6b21a8;padding:2px 10px;border-radius:20px;"></span></div>
         <!-- legenda orizzontale -->
         <div style="display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--surface2);border-radius:8px;padding:.5rem .9rem;margin-bottom:1rem;font-size:.78rem;">
           <span style="font-weight:700;color:var(--muted);margin-right:4px">Legenda:</span>
@@ -1141,7 +1172,8 @@ function renderSessioni(){
   const tbody=document.getElementById('sess-tbody');
   const sessioni=[..._sessioni].sort((a,b)=>a.Data.localeCompare(b.Data));
   if(!sessioni.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="4">Nessuna sessione disponibile.</td></tr>`;return;}
-  tbody.innerHTML=sessioni.map(s=>{
+
+  function sessRowHtml(s){
     const cnt=_prenotazioni.filter(p=>p.sessione_id===s.id).length;
     const liberi=Math.max(0,(s.Posti_Totali||0)-cnt);
     const past=isPassata(s.Data,s.riaperta);
@@ -1158,7 +1190,29 @@ function renderSessioni(){
       <td class="td-num">${s.Posti_Totali}</td>
       <td class="td-num ${libCls}">${liberi}${!past&&isFull?' <span class="esaurito-label">Esaurito</span>':''}</td>
     </tr>`;
-  }).join('');
+  }
+
+  const future=sessioni.filter(s=>!isPassata(s.Data,s.riaperta));
+  const passate=sessioni.filter(s=>isPassata(s.Data,s.riaperta));
+
+  let rows='';
+  if(passate.length){
+    rows+=`<tr id="sess-concluse-toggle-row" onclick="toggleSessConcluse()" style="cursor:pointer;background:var(--surface2);">
+      <td colspan="4" style="padding:.45rem .9rem;font-size:.78rem;font-weight:700;color:var(--muted);">
+        Sessioni concluse (${passate.length}) <span id="sess-concluse-chev">&#9660;</span>
+      </td>
+    </tr>`;
+    rows+=passate.map(s=>`<tr class="sess-concluse-row" style="display:none">${sessRowHtml(s).replace(/^<tr[^>]*>/,'').replace(/<\/tr>$/,'')}</tr>`).join('');
+  }
+  rows+=future.map(sessRowHtml).join('');
+  tbody.innerHTML=rows;
+}
+function toggleSessConcluse(){
+  const rows=document.querySelectorAll('.sess-concluse-row');
+  const chev=document.getElementById('sess-concluse-chev');
+  const aperte=rows.length&&rows[0].style.display!=='none';
+  rows.forEach(r=>r.style.display=aperte?'none':'table-row');
+  if(chev) chev.innerHTML=aperte?'&#9660;':'&#9650;';
 }
 
 // ══ MODAL ═════════════════════════════════════════
@@ -1403,9 +1457,10 @@ function initSlider(){
   const prossima=sessioni.filter(s=>!isPassata(s.Data,s.riaperta))[0];
   if(sliderSelSessId===null&&prossima) sliderSelSessId=prossima.id;
 
-  // costruisci pillole
-  let html=`<div class="sess-pill-all${!sliderSelSessId?' selected':''}" id="pill-all">Tutte</div>`;
-  html+=sessioni.map(s=>{
+  const future=sessioni.filter(s=>!isPassata(s.Data,s.riaperta));
+  const passate=sessioni.filter(s=>isPassata(s.Data,s.riaperta));
+
+  function pillHtml(s){
     const past=isPassata(s.Data,s.riaperta);
     const sel=s.id===sliderSelSessId;
     const d=new Date(s.Data+'T00:00:00');
@@ -1415,7 +1470,16 @@ function initSlider(){
       <div class="sess-pill-data">${giorno} ${anno}</div>
       <div class="sess-pill-luogo">${s.Luogo||''}</div>
     </div>`;
-  }).join('');
+  }
+
+  let html=`<div class="sess-pill-all${!sliderSelSessId?' selected':''}" id="pill-all">Tutte</div>`;
+  if(passate.length){
+    html+=`<div class="sess-pill-concluse-toggle" id="pill-concluse-toggle" title="Mostra sessioni concluse" style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding:.4rem .85rem;border-radius:9px;border:1.5px dashed var(--border);background:var(--bg);cursor:pointer;font-size:.74rem;font-weight:700;color:var(--muted);white-space:nowrap;transition:all .16s;">
+      Concluse (${passate.length}) &#9660;
+    </div>`;
+    html+=passate.map(s=>`<div class="sess-pill-past-item" style="display:none">${pillHtml(s)}</div>`).join('');
+  }
+  html+=future.map(pillHtml).join('');
   wrap.innerHTML=html;
 
   // click handlers
@@ -1425,6 +1489,15 @@ function initSlider(){
       if(!_sliderDragged) sliderSelectSess(parseInt(pill.dataset.id));
     });
   });
+  const toggleBtn=wrap.querySelector('#pill-concluse-toggle');
+  if(toggleBtn){
+    toggleBtn.addEventListener('click',()=>{
+      const items=wrap.querySelectorAll('.sess-pill-past-item');
+      const aperto=items[0]&&items[0].style.display!=='none';
+      items.forEach(el=>el.style.display=aperto?'none':'inline-flex');
+      toggleBtn.innerHTML=aperto?`Concluse (${items.length}) &#9660;`:`Concluse (${items.length}) &#9650;`;
+    });
+  }
 
   // scroll alla pill selezionata — mostrala all'inizio dello slider
   setTimeout(()=>{
@@ -1541,6 +1614,8 @@ function renderRiepilogo(){
 
     const stT=document.getElementById('stat-totale');const stE=document.getElementById('stat-email');const stD=document.getElementById('stat-da-inviare');
     if(stT)stT.textContent='0';if(stE)stE.textContent='0';if(stD)stD.textContent='0';
+    const stA=document.getElementById('stat-attesa');const stAs=document.getElementById('stat-attesa-sub');
+    if(stA)stA.textContent='0';if(stAs)stAs.textContent='';
     return;
   }
   // aggiorna badge
@@ -1548,12 +1623,17 @@ function renderRiepilogo(){
   // aggiorna stat cards
   const emailInviate=filtered.filter(p=>p.email_inviata_at).length;
   const daInviare=filtered.length-emailInviate;
+  const inAttesa=filtered.filter(p=>(p.esito_amm||'In attesa')==='In attesa').length;
   const stTot=document.getElementById('stat-totale');
   const stEmail=document.getElementById('stat-email');
   const stDa=document.getElementById('stat-da-inviare');
+  const stAttesa=document.getElementById('stat-attesa');
+  const stAttesaSub=document.getElementById('stat-attesa-sub');
   if(stTot)stTot.textContent=filtered.length;
   if(stEmail)stEmail.textContent=emailInviate;
   if(stDa)stDa.textContent=daInviare;
+  if(stAttesa)stAttesa.textContent=inAttesa;
+  if(stAttesaSub)stAttesaSub.textContent=inAttesa>0?`su ${filtered.length} tot`:'';
 
   const ammCls={
     'Idoneo':'amm-idoneo','Idoneo con prescrizioni':'amm-restrizioni',
@@ -1714,6 +1794,12 @@ async function renderAdminEsiti(){
       return(a.cognome_nome||'').localeCompare(b.cognome_nome||'','it');
     });
     // filtra: se c'è ricerca mostra tutti i match, altrimenti solo "In attesa"
+    const inAttesaCount=sorted.filter(p=>(p.esito_amm||'In attesa')==='In attesa').length;
+    const badgeEl=document.getElementById('badge-attesa-esiti');
+    if(badgeEl){
+      if(inAttesaCount>0){badgeEl.textContent=`${inAttesaCount} in attesa`;badgeEl.style.display='inline-flex';}
+      else{badgeEl.style.display='none';}
+    }
     const filtered=sorted.filter(p=>{
       const esito=p.esito_amm||'In attesa';
       if(q){
@@ -1807,9 +1893,11 @@ async function addSessione(){
 function renderAdminSessioni(){
   const cont=document.getElementById('adm-sess-list');
   const sessioni=[..._sessioni].sort((a,b)=>a.Data.localeCompare(b.Data));
+  const future=sessioni.filter(s=>!isPassata(s.Data,s.riaperta));
+  const concluse=sessioni.filter(s=>isPassata(s.Data,s.riaperta));
   document.getElementById('sess-count').textContent=sessioni.length?`${sessioni.length} session${sessioni.length>1?'i':'e'}`:'';
   if(!sessioni.length){cont.innerHTML=`<div class="empty"><div class="empty-ico">📅</div><p>Nessuna sessione.</p></div>`;return;}
-  cont.innerHTML=sessioni.map(s=>{
+  function renderSessItem(s){
     const cnt=_prenotazioni.filter(p=>p.sessione_id===s.id).length;
     const liberi=Math.max(0,s.Posti_Totali-cnt);
     const past=isPassata(s.Data,s.riaperta);
@@ -1858,7 +1946,27 @@ function renderAdminSessioni(){
         </div>
       </div>
     </div>`;
-  }).join('');
+  }
+  // Rendering separato: concluse collassabili in cima + future sotto
+  let html='';
+  if(concluse.length){
+    const concluseHtml=concluse.map(renderSessItem).join('');
+    html+=`<div id="adm-concluse-toggle" onclick="toggleAdmConcluse()" style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .9rem;border-radius:8px;background:var(--surface);border:1px dashed var(--border);cursor:pointer;margin-bottom:.4rem;">
+      <span style="font-size:.82rem;font-weight:700;color:var(--muted);">Sessioni concluse (${concluse.length})</span>
+      <span id="adm-concluse-chevron" style="font-size:.75rem;color:var(--muted);">&#9660; mostra</span>
+    </div>
+    <div id="adm-concluse-wrap" style="display:none;margin-bottom:.5rem">${concluseHtml}</div>`;
+  }
+  html+=future.map(renderSessItem).join('');
+  cont.innerHTML=html;
+}
+function toggleAdmConcluse(){
+  const wrap=document.getElementById('adm-concluse-wrap');
+  const chev=document.getElementById('adm-concluse-chevron');
+  if(!wrap)return;
+  const aperto=wrap.style.display!=='none';
+  wrap.style.display=aperto?'none':'block';
+  chev.innerHTML=aperto?'&#9660; mostra':'&#9650; nascondi';
 }
 async function toggleRiaperta(id,riaperta){
   try{
@@ -2531,6 +2639,17 @@ async function inviaEmailMarittimo(id){
   } catch(e){ console.warn('Errore salvataggio email_inviata_at:', e.message); }
 }
 
+function toggleHelp(){
+  const p=document.getElementById('help-panel');
+  if(p) p.style.display=p.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',function(e){
+  const panel=document.getElementById('help-panel');
+  const btn=document.getElementById('btn-help');
+  if(panel&&panel.style.display!=='none'&&!panel.contains(e.target)&&e.target!==btn){
+    panel.style.display='none';
+  }
+});
 </script>
 <!-- ══ SMART FOOTER FISSO ══ -->
 <div id="smart-footer">

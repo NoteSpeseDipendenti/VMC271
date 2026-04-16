@@ -475,7 +475,7 @@ tbody tr.sess-past:hover{background:transparent;}
       <span class="spinner"></span> Connessione…
     </div>
     <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v49 &nbsp;·&nbsp; 14.04.26
+      VMC 271 — v50 &nbsp;·&nbsp; 16.04.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -556,7 +556,7 @@ tbody tr.sess-past:hover{background:transparent;}
       </table>
     </div>
     <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v49 &nbsp;·&nbsp; 14.04.26
+      VMC 271 — v50 &nbsp;·&nbsp; 16.04.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -1456,6 +1456,7 @@ function initSlider(){
   const sessioni=[..._sessioni].sort((a,b)=>a.Data.localeCompare(b.Data));
   const prossima=sessioni.filter(s=>!isPassata(s.Data,s.riaperta))[0];
   if(sliderSelSessId===null&&prossima) sliderSelSessId=prossima.id;
+else if(sliderSelSessId!==null&&!_sessioni.find(x=>x.id===sliderSelSessId)) sliderSelSessId=prossima?.id||null;
 
   const future=sessioni.filter(s=>!isPassata(s.Data,s.riaperta));
   const passate=sessioni.filter(s=>isPassata(s.Data,s.riaperta));
@@ -1575,7 +1576,6 @@ function aggiornaLabelSlider(){
 // ══ RIEPILOGO ═════════════════════════════════════
 async function loadRiepilogo(){
   document.getElementById('riepilogo-list').innerHTML='<div class="empty"><span class="spinner"></span></div>';
-  sliderSelSessId=null; // reset filtro ad ogni caricamento
   setConnDot('loading');
   try{
     _sessioni=await sbGet('Sessioni','order=Data');

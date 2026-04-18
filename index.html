@@ -348,6 +348,26 @@ tbody tr.sess-past:hover{background:transparent;}
 .stat-card-attesa{background:#fdf4ff;border:1px solid #d8b4fe;}
 .stat-card-attesa .stat-card-num,.stat-card-attesa .stat-card-lbl{color:#6b21a8;}
 .stat-card-attesa-sub{font-size:.55rem;color:#9333ea;margin-top:1px;}
+.stat-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:.9rem;}
+.stat-kpi{border-radius:8px;padding:.5rem .6rem;background:var(--surface);}
+.stat-kpi-num{font-size:19px;font-weight:800;line-height:1;}
+.stat-kpi-lbl{font-size:.6rem;color:var(--muted);margin-top:2px;line-height:1.3;}
+.stat-kpi-green{background:#f0faf3;}.stat-kpi-green .stat-kpi-num,.stat-kpi-green .stat-kpi-lbl{color:#2e7d32;}
+.stat-kpi-orange{background:#fff8f0;}.stat-kpi-orange .stat-kpi-num,.stat-kpi-orange .stat-kpi-lbl{color:#b45309;}
+.stat-kpi-purple{background:#fdf4ff;}.stat-kpi-purple .stat-kpi-num,.stat-kpi-purple .stat-kpi-lbl{color:#6b21a8;}
+.stat-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.stat-chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;}
+.stat-chart-full{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;margin-bottom:12px;}
+.stat-chart-title{font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.5rem;}
+.sk-bar-row{display:flex;align-items:center;gap:5px;margin-bottom:5px;}
+.sk-bar-lbl{font-size:.62rem;color:var(--text);width:66px;flex-shrink:0;text-align:right;line-height:1.2;}
+.sk-bar-wrap{flex:1;background:var(--surface2);border-radius:4px;height:9px;overflow:hidden;}
+.sk-bar-fill{height:100%;border-radius:4px;}
+.sk-bar-val{font-size:.62rem;color:var(--muted);width:20px;flex-shrink:0;text-align:right;}
+.sk-trend-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;}
+.sk-trend-bar{width:100%;border-radius:2px 2px 0 0;}
+.sk-trend-month{font-size:.55rem;color:var(--muted);}
+.sk-trend-val{font-size:.55rem;color:var(--muted);}
 .btn-email{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;font-size:14px;width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .btn-email:hover{background:#c8e6c9;}
 .btn-email.disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
@@ -475,7 +495,7 @@ tbody tr.sess-past:hover{background:transparent;}
       <span class="spinner"></span> Connessione…
     </div>
     <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v50 &nbsp;·&nbsp; 16.04.26
+      VMC 271 — v51 &nbsp;·&nbsp; 18.04.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -506,7 +526,11 @@ tbody tr.sess-past:hover{background:transparent;}
   <button class="nav-tab active" onclick="showPage('sessioni',this)">Sessioni</button>
   <button class="nav-tab" onclick="showPage('riepilogo',this)">Riepilogo</button>
   <button class="nav-tab" onclick="showPage('config-email',this)">✉️ Email</button>
-  <button class="nav-tab admin-only" style="display:none" onclick="showPage('admin',this)">Admin</button>
+ 
+<button class="nav-tab" onclick="showPage('statistiche',this)">📊 Statistiche</button>
+<button class="nav-tab admin-only" style="display:none" onclick="showPage('admin',this)">Admin</button>
+
+
   <button id="btn-help" onclick="toggleHelp()" title="Aiuto" style="margin-left:auto;margin-right:6px;width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:var(--accent);color:#fff;font-size:.9rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center;box-shadow:0 2px 6px rgba(0,100,180,.25);">?</button>
 </nav>
 <!-- Pannello aiuto -->
@@ -556,7 +580,7 @@ tbody tr.sess-past:hover{background:transparent;}
       </table>
     </div>
     <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v50 &nbsp;·&nbsp; 16.04.26
+      VMC 271 — v51 &nbsp;·&nbsp; 18.04.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -744,6 +768,55 @@ tbody tr.sess-past:hover{background:transparent;}
     </div>
 
   </div><!-- /page-admin -->
+
+
+<!-- PAGINA STATISTICHE -->
+<div class="page" id="page-statistiche">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+    <div>
+      <div style="font-size:1rem;font-weight:800">📊 Statistiche</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-top:1px">Dati in tempo reale</div>
+    </div>
+ <button class="btn btn-ghost" onclick="loadStatistiche()" style="min-width:110px;">↻ Aggiorna</button>
+  </div>
+  <div class="stat-kpi-grid" id="stat-kpi-grid">
+    <div class="stat-kpi"><div class="stat-kpi-num" id="sk-tot">—</div><div class="stat-kpi-lbl">Prenotazioni totali</div></div>
+    <div class="stat-kpi stat-kpi-green"><div class="stat-kpi-num" id="sk-sess">—</div><div class="stat-kpi-lbl">Sessioni effettuate</div></div>
+    <div class="stat-kpi stat-kpi-orange"><div class="stat-kpi-num" id="sk-email">—</div><div class="stat-kpi-lbl">Email inviate</div></div>
+    <div class="stat-kpi stat-kpi-purple"><div class="stat-kpi-num" id="sk-attesa">—</div><div class="stat-kpi-lbl">Esiti in attesa</div></div>
+  </div>
+  <div class="stat-charts-row">
+    <div class="stat-chart-card">
+      <div class="stat-chart-title">Esiti</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <svg id="sk-pie" width="62" height="62" viewBox="0 0 32 32"></svg>
+        <div id="sk-pie-legend" style="display:flex;flex-direction:column;gap:3px;font-size:.62rem;color:var(--text)"></div>
+      </div>
+    </div>
+    <div class="stat-chart-card">
+      <div class="stat-chart-title">Per luogo</div>
+      <div id="sk-luoghi"></div>
+      <div style="height:.5px;background:var(--border);margin:.45rem 0"></div>
+      <div class="stat-chart-title">Per società</div>
+      <div id="sk-societa"></div>
+    </div>
+  </div>
+  <div class="stat-charts-row">
+    <div class="stat-chart-card">
+      <div class="stat-chart-title">Per operatore</div>
+      <div id="sk-operatori"></div>
+    </div>
+    <div class="stat-chart-card">
+      <div class="stat-chart-title">Trend mensile</div>
+      <div id="sk-trend" style="display:flex;align-items:flex-end;gap:3px;height:58px;margin-top:.3rem"></div>
+    </div>
+  </div>
+  <div class="stat-chart-full">
+    <div class="stat-chart-title">Prenotazioni per sessione</div>
+    <div id="sk-sessioni-bars"></div>
+  </div>
+</div>
+
 
   <!-- PAGINA CONFIG EMAIL -->
   <div class="page" id="page-config-email">
@@ -1139,6 +1212,7 @@ async function showPage(id,tab){
   if(id==='riepilogo') await loadRiepilogo();
   if(id==='config-email') loadCfgEmail();
   if(id==='admin')     await loadAdmin();
+if(id==='statistiche') await loadStatistiche();
 }
 function showAdmPanel(id){
   document.querySelectorAll('.adm-panel').forEach(p=>p.classList.remove('active'));
@@ -2639,6 +2713,102 @@ async function inviaEmailMarittimo(id){
   } catch(e){ console.warn('Errore salvataggio email_inviata_at:', e.message); }
 }
 
+async function loadStatistiche(){
+  const allPren=await sbGet('Prenotazioni','select=*&order=created_at');
+  const allSess=[..._sessioni].sort((a,b)=>a.Data.localeCompare(b.Data));
+  const sessPassate=allSess.filter(s=>isPassata(s.Data,s.riaperta));
+
+  // KPI
+  const totale=allPren.length;
+  const emailInv=allPren.filter(p=>p.email_inviata_at).length;
+  const inAttesa=allPren.filter(p=>(p.esito_amm||'In attesa')==='In attesa').length;
+  const pctEmail=totale?Math.round(emailInv/totale*100):0;
+  document.getElementById('sk-tot').textContent=totale;
+  document.getElementById('sk-sess').textContent=sessPassate.length;
+  document.getElementById('sk-email').textContent=pctEmail+'%';
+  document.getElementById('sk-attesa').textContent=inAttesa;
+
+  // Esiti — torta
+  const ESITO_COLORS={'Idoneo':'#2e7d32','Idoneo con prescrizioni':'#f9a825','Non idoneo':'#c62828','Assente':'#90a4ae','Rinviato':'#ff7043','In attesa':'#9333ea'};
+  const esitiCount={};
+  allPren.forEach(p=>{const e=p.esito_amm||'In attesa';esitiCount[e]=(esitiCount[e]||0)+1;});
+  const pie=document.getElementById('sk-pie');
+  const legend=document.getElementById('sk-pie-legend');
+  let offset=0; pie.innerHTML=''; legend.innerHTML='';
+  const circ=62.83;
+  Object.entries(esitiCount).sort((a,b)=>b[1]-a[1]).forEach(([esito,cnt])=>{
+    const pct=cnt/totale; const arc=pct*circ;
+    const col=ESITO_COLORS[esito]||'#ccc';
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r','10');c.setAttribute('cx','16');c.setAttribute('cy','16');
+    c.setAttribute('fill','none');c.setAttribute('stroke',col);c.setAttribute('stroke-width','20');
+    c.setAttribute('stroke-dasharray',`${arc} ${circ}`);c.setAttribute('stroke-dashoffset',`${-offset}`);
+    c.setAttribute('transform','rotate(-90 16 16)');
+    pie.appendChild(c);
+    const hole=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    hole.setAttribute('r','6');hole.setAttribute('cx','16');hole.setAttribute('cy','16');hole.setAttribute('fill','var(--surface)');
+    pie.appendChild(hole);
+    offset+=arc;
+    legend.innerHTML+=`<div style="display:flex;align-items:center;gap:4px"><div style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></div>${esito} ${Math.round(pct*100)}%</div>`;
+  });
+
+  // Barre helper
+  function renderBars(containerId, data, color){
+    const max=Math.max(...data.map(d=>d.v),1);
+    document.getElementById(containerId).innerHTML=data.map(d=>`
+      <div class="sk-bar-row">
+        <div class="sk-bar-lbl">${d.l}</div>
+        <div class="sk-bar-wrap"><div class="sk-bar-fill" style="width:${Math.round(d.v/max*100)}%;background:${color}"></div></div>
+        <div class="sk-bar-val">${d.v}</div>
+      </div>`).join('');
+  }
+
+  // Per luogo
+  const luoghiMap={};
+  allPren.forEach(p=>{const s=allSess.find(x=>x.id===p.sessione_id);const l=s?.Luogo||'—';luoghiMap[l]=(luoghiMap[l]||0)+1;});
+  renderBars('sk-luoghi',Object.entries(luoghiMap).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'#0070c0');
+
+  // Per società — da nave_assegnata o da Dipendenti non disponibile, usiamo Navi
+  const naveSocMap={};
+  _navi.forEach(n=>naveSocMap[n.Nome_Nave]=n.Societa);
+  const socMap={};
+  allPren.forEach(p=>{const soc=naveSocMap[p.nave_assegnata]||'—';socMap[soc]=(socMap[soc]||0)+1;});
+  renderBars('sk-societa',Object.entries(socMap).filter(([k])=>k!=='—'&&k!=='Da definire').sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'#00c6d7');
+
+  // Per operatore
+  const opMap={};
+  allPren.forEach(p=>{const op=p.operatore||'—';opMap[op]=(opMap[op]||0)+1;});
+  renderBars('sk-operatori',Object.entries(opMap).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'#6b21a8');
+
+  // Trend mensile anno corrente
+  const anno=new Date().getFullYear();
+  const mesi=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const meseCount=new Array(12).fill(0);
+  allPren.forEach(p=>{
+    const s=allSess.find(x=>x.id===p.sessione_id);
+    if(s&&s.Data.startsWith(anno)){const m=parseInt(s.Data.split('-')[1])-1;meseCount[m]++;}
+  });
+  const maxT=Math.max(...meseCount,1);
+  const meseCorrente=new Date().getMonth();
+  document.getElementById('sk-trend').innerHTML=mesi.slice(0,meseCorrente+2).map((m,i)=>{
+    const v=meseCount[i];
+    const h=v?Math.round(v/maxT*54):2;
+    return `<div class="sk-trend-col">
+      <div class="sk-trend-val">${v||'—'}</div>
+      <div class="sk-trend-bar" style="height:${h}px;background:${v?'#0070c0':'var(--border)'}"></div>
+      <div class="sk-trend-month">${m}</div>
+    </div>`;
+  }).join('');
+
+  // Prenotazioni per sessione (ultime 8)
+  const sessBars=allSess.slice(-8).reverse().map(s=>{
+    const cnt=allPren.filter(p=>p.sessione_id===s.id).length;
+    const d=new Date(s.Data+'T00:00:00');
+    const lbl=d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'})+' · '+(s.Luogo||'').slice(0,3);
+    return {l:lbl,v:cnt};
+  });
+  renderBars('sk-sessioni-bars',sessBars,'#0070c0');
+}
 function toggleHelp(){
   const p=document.getElementById('help-panel');
   if(p) p.style.display=p.style.display==='none'?'block':'none';

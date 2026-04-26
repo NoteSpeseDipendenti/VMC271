@@ -495,7 +495,7 @@ tbody tr.sess-past:hover{background:transparent;}
       <span class="spinner"></span> Connessione…
     </div>
     <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v51 &nbsp;·&nbsp; 18.04.26
+      VMC 271 — v52 &nbsp;·&nbsp; 18.04.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -580,7 +580,7 @@ tbody tr.sess-past:hover{background:transparent;}
       </table>
     </div>
     <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v51 &nbsp;·&nbsp; 18.04.26
+      VMC 271 — v52 &nbsp;·&nbsp; 18.04.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -789,8 +789,8 @@ tbody tr.sess-past:hover{background:transparent;}
     <div class="stat-chart-card">
       <div class="stat-chart-title">Esiti</div>
       <div style="display:flex;gap:8px;align-items:center">
-        <svg id="sk-pie" width="62" height="62" viewBox="0 0 32 32"></svg>
-        <div id="sk-pie-legend" style="display:flex;flex-direction:column;gap:3px;font-size:.62rem;color:var(--text)"></div>
+       <svg id="sk-pie" width="130" height="130" viewBox="0 0 140 140"></svg>
+        <div id="sk-pie-legend" style="display:flex;flex-direction:column;gap:5px;font-size:.65rem;color:var(--text)"></div>
       </div>
     </div>
     <div class="stat-chart-card">
@@ -811,9 +811,18 @@ tbody tr.sess-past:hover{background:transparent;}
       <div id="sk-trend" style="display:flex;align-items:flex-end;gap:3px;height:58px;margin-top:.3rem"></div>
     </div>
   </div>
-  <div class="stat-chart-full">
+ <div class="stat-chart-full">
     <div class="stat-chart-title">Prenotazioni per sessione</div>
     <div id="sk-sessioni-bars"></div>
+    <div style="border-top:1px solid var(--border);margin:14px 0 10px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="stat-chart-title" style="margin-bottom:0;">Tasso di copertura sessioni</div>
+      <div style="font-size:.6rem;color:var(--muted);">prenotati / posti disponibili</div>
+    </div>
+    <div id="sk-copertura-bars"></div>
+    <div style="display:flex;gap:12px;margin-top:6px;font-size:.58rem;color:var(--muted);">
+      <span>🟢 ≥75% alta</span><span>🟡 50–74% media</span><span>🔴 &lt;50% bassa</span>
+    </div>
   </div>
 </div>
 
@@ -2732,25 +2741,35 @@ async function loadStatistiche(){
   const ESITO_COLORS={'Idoneo':'#2e7d32','Idoneo con prescrizioni':'#f9a825','Non idoneo':'#c62828','Assente':'#90a4ae','Rinviato':'#ff7043','In attesa':'#9333ea'};
   const esitiCount={};
   allPren.forEach(p=>{const e=p.esito_amm||'In attesa';esitiCount[e]=(esitiCount[e]||0)+1;});
-  const pie=document.getElementById('sk-pie');
+const pie=document.getElementById('sk-pie');
   const legend=document.getElementById('sk-pie-legend');
   let offset=0; pie.innerHTML=''; legend.innerHTML='';
-  const circ=62.83;
+  const R=60; const CX=70; const CY=70; const circ=2*Math.PI*R;
   Object.entries(esitiCount).sort((a,b)=>b[1]-a[1]).forEach(([esito,cnt])=>{
     const pct=cnt/totale; const arc=pct*circ;
     const col=ESITO_COLORS[esito]||'#ccc';
     const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    c.setAttribute('r','10');c.setAttribute('cx','16');c.setAttribute('cy','16');
-    c.setAttribute('fill','none');c.setAttribute('stroke',col);c.setAttribute('stroke-width','20');
+    c.setAttribute('r',R);c.setAttribute('cx',CX);c.setAttribute('cy',CY);
+    c.setAttribute('fill','none');c.setAttribute('stroke',col);c.setAttribute('stroke-width','24');
     c.setAttribute('stroke-dasharray',`${arc} ${circ}`);c.setAttribute('stroke-dashoffset',`${-offset}`);
-    c.setAttribute('transform','rotate(-90 16 16)');
+    c.setAttribute('transform',`rotate(-90 ${CX} ${CY})`);
     pie.appendChild(c);
-    const hole=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    hole.setAttribute('r','6');hole.setAttribute('cx','16');hole.setAttribute('cy','16');hole.setAttribute('fill','var(--surface)');
-    pie.appendChild(hole);
     offset+=arc;
-    legend.innerHTML+=`<div style="display:flex;align-items:center;gap:4px"><div style="width:7px;height:7px;border-radius:50%;background:${col};flex-shrink:0"></div>${esito} ${Math.round(pct*100)}%</div>`;
+    legend.innerHTML+=`<div style="display:flex;align-items:center;gap:5px"><div style="width:9px;height:9px;border-radius:50%;background:${col};flex-shrink:0"></div>${esito} ${Math.round(pct*100)}%</div>`;
   });
+  const hole=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  hole.setAttribute('r','42');hole.setAttribute('cx',CX);hole.setAttribute('cy',CY);hole.setAttribute('fill','var(--surface)');
+  pie.appendChild(hole);
+  const tNum=document.createElementNS('http://www.w3.org/2000/svg','text');
+  tNum.setAttribute('x',CX);tNum.setAttribute('y','67');tNum.setAttribute('text-anchor','middle');
+  tNum.setAttribute('font-size','22');tNum.setAttribute('font-weight','600');tNum.setAttribute('fill','var(--text)');
+  tNum.textContent=totale;
+  pie.appendChild(tNum);
+  const tLbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+  tLbl.setAttribute('x',CX);tLbl.setAttribute('y','82');tLbl.setAttribute('text-anchor','middle');
+  tLbl.setAttribute('font-size','11');tLbl.setAttribute('fill','var(--muted)');
+  tLbl.textContent='totali';
+  pie.appendChild(tLbl);
 
   // Barre helper
   function renderBars(containerId, data, color){
@@ -2800,14 +2819,36 @@ async function loadStatistiche(){
     </div>`;
   }).join('');
 
-  // Prenotazioni per sessione (ultime 8)
-  const sessBars=allSess.slice(-8).reverse().map(s=>{
-    const cnt=allPren.filter(p=>p.sessione_id===s.id).length;
-    const d=new Date(s.Data+'T00:00:00');
-    const lbl=d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'})+' · '+(s.Luogo||'').slice(0,3);
-    return {l:lbl,v:cnt};
-  });
-  renderBars('sk-sessioni-bars',sessBars,'#0070c0');
+// Prenotazioni per sessione — solo passate con almeno 1 prenotazione (ultime 8)
+  const sessConPren=sessPassate.filter(s=>allPren.some(p=>p.sessione_id===s.id))
+    .slice(-8).reverse().map(s=>{
+      const cnt=allPren.filter(p=>p.sessione_id===s.id).length;
+      const d=new Date(s.Data+'T00:00:00');
+      const lbl=d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'})+' · '+(s.Luogo||'').slice(0,3);
+      return {l:lbl,v:cnt};
+    });
+  if(sessConPren.length) renderBars('sk-sessioni-bars',sessConPren,'#0070c0');
+  else document.getElementById('sk-sessioni-bars').innerHTML='<div style="font-size:.65rem;color:var(--muted);padding:6px 0;">Nessuna sessione passata con prenotazioni.</div>';
+
+  // Tasso di copertura — solo sessioni passate con posti definiti
+  const cobBars=sessPassate.filter(s=>s.Posti_Totali>0&&allPren.some(p=>p.sessione_id===s.id))
+    .slice(-8).reverse().map(s=>{
+      const cnt=allPren.filter(p=>p.sessione_id===s.id).length;
+      const pct=Math.round(cnt/s.Posti_Totali*100);
+      const d=new Date(s.Data+'T00:00:00');
+      const lbl=d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'})+' · '+(s.Luogo||'').slice(0,3);
+      const col=pct>=75?'#2e7d32':pct>=50?'#f9a825':'#c62828';
+      const valCol=pct>=75?'#2e7d32':pct>=50?'#b45309':'#c62828';
+      return {l:lbl,v:pct,col,valCol};
+    });
+  const maxCob=Math.max(...cobBars.map(d=>d.v),1);
+  document.getElementById('sk-copertura-bars').innerHTML=cobBars.length
+    ? cobBars.map(d=>`<div class="sk-bar-row">
+        <div class="sk-bar-lbl">${d.l}</div>
+        <div class="sk-bar-wrap"><div class="sk-bar-fill" style="width:${Math.round(d.v/maxCob*100)}%;background:${d.col}"></div></div>
+        <div class="sk-bar-val" style="color:${d.valCol};font-weight:600">${d.v}%</div>
+      </div>`).join('')
+    : '<div style="font-size:.65rem;color:var(--muted);padding:6px 0;">Posti_Totali non configurati per le sessioni passate.</div>';
 }
 function toggleHelp(){
   const p=document.getElementById('help-panel');

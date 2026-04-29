@@ -785,12 +785,13 @@ tbody tr.sess-past:hover{background:transparent;}
     <div class="stat-kpi stat-kpi-orange"><div class="stat-kpi-num" id="sk-email">—</div><div class="stat-kpi-lbl">Email inviate</div></div>
     <div class="stat-kpi stat-kpi-purple"><div class="stat-kpi-num" id="sk-attesa">—</div><div class="stat-kpi-lbl">Esiti in attesa</div></div>
   </div>
-  <div class="stat-charts-row">
+  
+<div class="stat-charts-row">
     <div class="stat-chart-card">
       <div class="stat-chart-title">Esiti</div>
-      <div style="display:flex;gap:8px;align-items:center">
-       <svg id="sk-pie" width="130" height="130" viewBox="0 0 140 140"></svg>
-        <div id="sk-pie-legend" style="display:flex;flex-direction:column;gap:5px;font-size:.65rem;color:var(--text)"></div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <svg id="sk-pie" width="130" height="130" viewBox="0 0 140 140" style="flex-shrink:0"></svg>
+        <div id="sk-pie-legend" style="display:flex;flex-direction:column;gap:6px;font-size:.65rem;color:var(--text)"></div>
       </div>
     </div>
     <div class="stat-chart-card">
@@ -807,22 +808,35 @@ tbody tr.sess-past:hover{background:transparent;}
       <div id="sk-operatori"></div>
     </div>
     <div class="stat-chart-card">
+      <div class="stat-chart-title" style="display:flex;justify-content:space-between;align-items:baseline">
+        <span>% email inviate</span>
+        <span style="font-size:.58rem;color:var(--muted);font-weight:400">email / prenotazioni</span>
+      </div>
+      <div id="sk-email-op"></div>
+    </div>
+  </div>
+  <div class="stat-charts-row">
+    <div class="stat-chart-card">
       <div class="stat-chart-title">Trend mensile</div>
       <div id="sk-trend" style="display:flex;align-items:flex-end;gap:3px;height:58px;margin-top:.3rem"></div>
     </div>
+    <div class="stat-chart-card" style="opacity:1"></div>
   </div>
- <div class="stat-chart-full">
+  <div class="stat-chart-full">
     <div class="stat-chart-title">Prenotazioni per sessione</div>
     <div id="sk-sessioni-bars"></div>
-    <div style="border-top:1px solid var(--border);margin:14px 0 10px;"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div class="stat-chart-title" style="margin-bottom:0;">Tasso di copertura sessioni</div>
-      <div style="font-size:.6rem;color:var(--muted);">prenotati / posti disponibili</div>
+    <div style="height:.5px;background:var(--border);margin:.7rem 0"></div>
+    <div class="stat-chart-title" style="display:flex;justify-content:space-between;align-items:baseline">
+      <span>Tasso di copertura sessioni</span>
+      <span style="font-size:.58rem;color:var(--muted);font-weight:400">prenotati / posti disponibili</span>
     </div>
     <div id="sk-copertura-bars"></div>
-    <div style="display:flex;gap:12px;margin-top:6px;font-size:.58rem;color:var(--muted);">
-      <span>🟢 ≥75% alta</span><span>🟡 50–74% media</span><span>🔴 &lt;50% bassa</span>
+    <div style="display:flex;gap:12px;margin-top:6px;font-size:.6rem;color:var(--muted);">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:#3B6D11;display:inline-block;"></span>≥75% alta</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:#BA7517;display:inline-block;"></span>50–74% media</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:#A32D2D;display:inline-block;"></span>&lt;50% bassa</span>
     </div>
+  </div>
   </div>
 </div>
 
@@ -2737,14 +2751,14 @@ async function loadStatistiche(){
   document.getElementById('sk-email').textContent=pctEmail+'%';
   document.getElementById('sk-attesa').textContent=inAttesa;
 
-  // Esiti — torta
-  const ESITO_COLORS={'Idoneo':'#2e7d32','Idoneo con prescrizioni':'#f9a825','Non idoneo':'#c62828','Assente':'#90a4ae','Rinviato':'#ff7043','In attesa':'#9333ea'};
+// Esiti — torta grande
+  const ESITO_COLORS={'Idoneo':'#0F6E56','Idoneo con prescrizioni':'#BA7517','Non idoneo':'#A32D2D','Assente':'#888780','Rinviato':'#185FA5','In attesa':'#534AB7'};
   const esitiCount={};
   allPren.forEach(p=>{const e=p.esito_amm||'In attesa';esitiCount[e]=(esitiCount[e]||0)+1;});
-const pie=document.getElementById('sk-pie');
+  const pie=document.getElementById('sk-pie');
   const legend=document.getElementById('sk-pie-legend');
   let offset=0; pie.innerHTML=''; legend.innerHTML='';
-  const R=60; const CX=70; const CY=70; const circ=2*Math.PI*R;
+  const R=60,CX=70,CY=70,circ=2*Math.PI*R;
   Object.entries(esitiCount).sort((a,b)=>b[1]-a[1]).forEach(([esito,cnt])=>{
     const pct=cnt/totale; const arc=pct*circ;
     const col=ESITO_COLORS[esito]||'#ccc';
@@ -2762,14 +2776,12 @@ const pie=document.getElementById('sk-pie');
   pie.appendChild(hole);
   const tNum=document.createElementNS('http://www.w3.org/2000/svg','text');
   tNum.setAttribute('x',CX);tNum.setAttribute('y','67');tNum.setAttribute('text-anchor','middle');
-  tNum.setAttribute('font-size','22');tNum.setAttribute('font-weight','600');tNum.setAttribute('fill','var(--text)');
-  tNum.textContent=totale;
-  pie.appendChild(tNum);
+  tNum.setAttribute('font-size','22');tNum.setAttribute('font-weight','500');tNum.setAttribute('fill','var(--text)');
+  tNum.textContent=totale; pie.appendChild(tNum);
   const tLbl=document.createElementNS('http://www.w3.org/2000/svg','text');
   tLbl.setAttribute('x',CX);tLbl.setAttribute('y','82');tLbl.setAttribute('text-anchor','middle');
   tLbl.setAttribute('font-size','11');tLbl.setAttribute('fill','var(--muted)');
-  tLbl.textContent='totali';
-  pie.appendChild(tLbl);
+  tLbl.textContent='totali'; pie.appendChild(tLbl);
 
   // Barre helper
   function renderBars(containerId, data, color){
@@ -2782,22 +2794,50 @@ const pie=document.getElementById('sk-pie');
       </div>`).join('');
   }
 
-  // Per luogo
+  // Per luogo — blu (tono per valore)
   const luoghiMap={};
   allPren.forEach(p=>{const s=allSess.find(x=>x.id===p.sessione_id);const l=s?.Luogo||'—';luoghiMap[l]=(luoghiMap[l]||0)+1;});
-  renderBars('sk-luoghi',Object.entries(luoghiMap).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'#0070c0');
+  const luoghiArr=Object.entries(luoghiMap).sort((a,b)=>b[1]-a[1]);
+  const bluToni=['#185FA5','#378ADD','#85B7EB'];
+  document.getElementById('sk-luoghi').innerHTML=luoghiArr.map(([l,v],i)=>{
+    const max=luoghiArr[0][1]; const col=bluToni[Math.min(i,2)];
+    return `<div class="sk-bar-row"><div class="sk-bar-lbl">${l}</div><div class="sk-bar-wrap"><div class="sk-bar-fill" style="width:${Math.round(v/max*100)}%;background:${col}"></div></div><div class="sk-bar-val">${v}</div></div>`;
+  }).join('');
 
-  // Per società — da nave_assegnata o da Dipendenti non disponibile, usiamo Navi
+  // Per società — teal
   const naveSocMap={};
   _navi.forEach(n=>naveSocMap[n.Nome_Nave]=n.Societa);
   const socMap={};
   allPren.forEach(p=>{const soc=naveSocMap[p.nave_assegnata]||'—';socMap[soc]=(socMap[soc]||0)+1;});
-  renderBars('sk-societa',Object.entries(socMap).filter(([k])=>k!=='—'&&k!=='Da definire').sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'#00c6d7');
+  const socArr=Object.entries(socMap).filter(([k])=>k!=='—'&&k!=='Da definire').sort((a,b)=>b[1]-a[1]);
+  const tealToni=['#0F6E56','#1D9E75','#5DCAA5'];
+  document.getElementById('sk-societa').innerHTML=socArr.map(([l,v],i)=>{
+    const max=socArr[0][1]; const col=tealToni[Math.min(i,2)];
+    return `<div class="sk-bar-row"><div class="sk-bar-lbl">${l}</div><div class="sk-bar-wrap"><div class="sk-bar-fill" style="width:${Math.round(v/max*100)}%;background:${col}"></div></div><div class="sk-bar-val">${v}</div></div>`;
+  }).join('');
 
-  // Per operatore
+  // Per operatore — viola
   const opMap={};
   allPren.forEach(p=>{const op=p.operatore||'—';opMap[op]=(opMap[op]||0)+1;});
-  renderBars('sk-operatori',Object.entries(opMap).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'#6b21a8');
+  renderBars('sk-operatori',Object.entries(opMap).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'#534AB7');
+
+  // % email per operatore — ambra
+  const opEmailMap={};
+  allPren.forEach(p=>{
+    const op=p.operatore||'—';
+    if(!opEmailMap[op]) opEmailMap[op]={tot:0,inv:0};
+    opEmailMap[op].tot++;
+    if(p.email_inviata_at) opEmailMap[op].inv++;
+  });
+  const emailOpArr=Object.entries(opEmailMap).filter(([k])=>k!=='—')
+    .map(([l,d])=>({l,v:d.tot?Math.round(d.inv/d.tot*100):0}))
+    .sort((a,b)=>b.v-a.v);
+  const maxEO=100;
+  document.getElementById('sk-email-op').innerHTML=emailOpArr.map(d=>{
+    const col=d.v>=75?'#BA7517':d.v>=50?'#EF9F27':'#FAC775';
+    const valCol=d.v>=50?'#BA7517':'#BA7517';
+    return `<div class="sk-bar-row"><div class="sk-bar-lbl">${d.l}</div><div class="sk-bar-wrap"><div class="sk-bar-fill" style="width:${d.v}%;background:${col}"></div></div><div class="sk-bar-val" style="color:${valCol};font-weight:500">${d.v}%</div></div>`;
+  }).join('');
 
   // Trend mensile anno corrente
   const anno=new Date().getFullYear();
@@ -2814,12 +2854,12 @@ const pie=document.getElementById('sk-pie');
     const h=v?Math.round(v/maxT*54):2;
     return `<div class="sk-trend-col">
       <div class="sk-trend-val">${v||'—'}</div>
-      <div class="sk-trend-bar" style="height:${h}px;background:${v?'#0070c0':'var(--border)'}"></div>
+      <div class="sk-trend-bar" style="height:${h}px;background:${v?'#185FA5':'var(--border)'}"></div>
       <div class="sk-trend-month">${m}</div>
     </div>`;
   }).join('');
 
-// Prenotazioni per sessione — solo passate con almeno 1 prenotazione (ultime 8)
+  // Prenotazioni per sessione — solo passate con almeno 1 prenotazione
   const sessConPren=sessPassate.filter(s=>allPren.some(p=>p.sessione_id===s.id))
     .slice(-8).reverse().map(s=>{
       const cnt=allPren.filter(p=>p.sessione_id===s.id).length;
@@ -2827,7 +2867,9 @@ const pie=document.getElementById('sk-pie');
       const lbl=d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'})+' · '+(s.Luogo||'').slice(0,3);
       return {l:lbl,v:cnt};
     });
-  if(sessConPren.length) renderBars('sk-sessioni-bars',sessConPren,'#0070c0');
+
+
+if(sessConPren.length) renderBars('sk-sessioni-bars',sessConPren,'#185FA5');
   else document.getElementById('sk-sessioni-bars').innerHTML='<div style="font-size:.65rem;color:var(--muted);padding:6px 0;">Nessuna sessione passata con prenotazioni.</div>';
 
   // Tasso di copertura — solo sessioni passate con posti definiti

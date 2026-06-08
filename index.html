@@ -1183,8 +1183,7 @@ async function initApp(){
   document.getElementById('hdr-av').textContent=currentUser.split(/[\s']+/).map(w=>w[0]).filter(Boolean).join('').slice(0,2).toUpperCase();
   // tab Admin visibile solo a Troiani e Ponticelli
   document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
-  const canAdmin=ADMIN_USERS.some(u=>u.name===currentUser);
-  if(canAdmin)document.querySelectorAll('.admin-only').forEach(el=>el.style.display='');
+  if(isAdmin)document.querySelectorAll('.admin-only').forEach(el=>el.style.display='');
   setConnDot('on');
   checkCfgEmailVersion();
   await loadSessioni();

@@ -445,6 +445,14 @@ tbody tr.sess-past:hover{background:transparent;}
 </style>
 </head>
 <body>
+<script>
+if(new URLSearchParams(window.location.search).get('al')) {
+  document.addEventListener('DOMContentLoaded', function(){
+    var ls = document.getElementById('login-screen');
+    if(ls) ls.style.display = 'none';
+  });
+}
+</script>
 
 <!-- ══ LOGIN ══ -->
 <!-- ══ PASSWORD SCREEN ══ -->
@@ -1080,6 +1088,20 @@ let ADMIN_PIN='2421';
 const ESITI=['In attesa','Idoneo','Idoneo con prescrizioni','Non idoneo','Assente','Rinviato'];
 
 let currentUser=null,isAdmin=false;
+
+// ── AUTOLOGIN DA PORTALE ─────────────────────────────
+window.addEventListener('DOMContentLoaded', async function(){
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('al');
+    if(!encoded) return;
+    const al = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    if(!al || !al.nome) return;
+    currentUser = al.nome;
+    isAdmin = ADMIN_USERS.some(u=>u.name===currentUser);
+    await initApp();
+  } catch(e) { /* fallback a login normale */ }
+});
 let selSessionId=null,selMarittimo=null,selMatricola=null,selSessData=null;
 let _sessioni=[],_prenotazioni=[],_navi=[],_luoghi=[];
 let _pendingAdminUser=null; // utente admin diretto selezionato

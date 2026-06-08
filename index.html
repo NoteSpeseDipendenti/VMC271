@@ -1098,7 +1098,7 @@ window.addEventListener('DOMContentLoaded', async function(){
     const al = JSON.parse(decodeURIComponent(escape(atob(encoded))));
     if(!al || !al.nome) return;
     currentUser = al.nome;
-    isAdmin = ADMIN_USERS.some(u=>u.name===currentUser);
+    isAdmin = al.can_admin === true;
     await initApp();
   } catch(e) { /* fallback a login normale */ }
 });

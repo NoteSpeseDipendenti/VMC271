@@ -503,7 +503,7 @@ if(new URLSearchParams(window.location.search).get('al')) {
       <span class="spinner"></span> Connessione…
     </div>
     <div style="margin-top:1.8rem;font-size:.68rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v52 &nbsp;·&nbsp; 18.04.26
+      VMC 271 — v54 &nbsp;·&nbsp; 24.06.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -588,7 +588,7 @@ if(new URLSearchParams(window.location.search).get('al')) {
       </table>
     </div>
     <div style="text-align:center;margin-top:2.5rem;padding-bottom:.5rem;font-size:.72rem;color:var(--muted);letter-spacing:.04em;">
-      VMC 271 — v52 &nbsp;·&nbsp; 18.04.26
+      VMC 271 — v54 &nbsp;·&nbsp; 24.06.26
     </div>
     <div style="margin-top:.4rem;font-size:.62rem;color:var(--muted);opacity:.7;">&copy; 2025 S.M.A.R.T Solutions — Tutti i diritti riservati</div>
   </div>
@@ -869,6 +869,11 @@ if(new URLSearchParams(window.location.search).get('al')) {
         <textarea id="cfg-body-liv" class="cfg-textarea" rows="9"></textarea>
       </div>
       <div class="card-section">
+        <div class="cfg-label">📍 Corpo email — Olbia</div>
+        <div class="cfg-hint">Variabili disponibili: <code>[NOME]</code> = nome marittimo &nbsp;·&nbsp; <code>[DATA]</code> = giorno e data sessione</div>
+        <textarea id="cfg-body-olb" class="cfg-textarea" rows="9"></textarea>
+      </div>
+      <div class="card-section">
         <div class="cfg-label">📋 Indirizzi CC (per conoscenza)</div>
         <div class="cfg-hint">Separare più indirizzi con il punto e virgola <code>;</code> — vengono aggiunti automaticamente ad ogni email</div>
         <input type="text" id="cfg-cc" class="cfg-textarea" style="resize:none;height:auto;padding:.6rem .9rem;font-family:monospace;font-size:.82rem;" placeholder="es. ufficio@moby.it;altro@tirrenia.it">
@@ -1089,6 +1094,15 @@ const ESITI=['In attesa','Idoneo','Idoneo con prescrizioni','Non idoneo','Assent
 
 let currentUser=null,isAdmin=false;
 
+// Normalizza i nomi ricevuti dal portale (SSO) al formato canonico usato in VMC 271
+// Aggiungere qui eventuali altri alias se il portale invia varianti diverse
+const PORTALE_NOME_MAP = {
+  'Roberto Troiani': 'Troiani R.',
+};
+function normalizzaNomeUtente(nome){
+  return PORTALE_NOME_MAP[nome] || nome;
+}
+
 // ── AUTOLOGIN DA PORTALE ─────────────────────────────
 window.addEventListener('DOMContentLoaded', async function(){
   try {
@@ -1097,7 +1111,7 @@ window.addEventListener('DOMContentLoaded', async function(){
     if(!encoded) return;
     const al = JSON.parse(decodeURIComponent(escape(atob(encoded))));
     if(!al || !al.nome) return;
-    currentUser = al.nome;
+    currentUser = normalizzaNomeUtente(al.nome);
     isAdmin = al.can_admin === true;
     await initApp();
   } catch(e) { /* fallback a login normale */ }
@@ -2642,12 +2656,24 @@ Cordiali saluti,
 
 
 [FIRMA]`;
+const CFG_EMAIL_BASE_OLB = `Buongiorno [NOME],
+
+Come da conversazione appena intercorsa Le confermo che il *[DATA]* ha la Visita del Medico Competente prenotata presso il centro INLAB alle ore 7.30, in Via Provinciale Pisana n. 617 a Olbia.
+
+Si dovrà presentare a digiuno, vescica piena, SENZA AVER FUMATO, DA ALMENO 3-4 ORE prima della visita.
+
+>>> SI RICHIEDE CONFERMA RICEZIONE MAIL. <<<
+
+Cordiali saluti,
+
+
+[FIRMA]`;
 
 function getCfgKey(field){
   return 'vmc271_email_' + (currentUser||'default') + '_' + field;
 }
 
-const CFG_EMAIL_VERSION = 'v45'; // aggiorna ad ogni modifica testi base
+const CFG_EMAIL_VERSION = 'v46'; // aggiorna ad ogni modifica testi base
 
 function checkCfgEmailVersion(){
   const savedVer = localStorage.getItem('vmc271_email_version_' + (currentUser||'default'));
@@ -2655,6 +2681,7 @@ function checkCfgEmailVersion(){
     // testi base cambiati — forza reset silenzioso
     localStorage.setItem(getCfgKey('tdg'), CFG_EMAIL_BASE_TDG);
     localStorage.setItem(getCfgKey('liv'), CFG_EMAIL_BASE_LIV);
+    localStorage.setItem(getCfgKey('olb'), CFG_EMAIL_BASE_OLB);
     localStorage.setItem('vmc271_email_version_' + (currentUser||'default'), CFG_EMAIL_VERSION);
     // NON resetta firma e CC — sono personali
     console.log('Testi email aggiornati alla versione', CFG_EMAIL_VERSION);
@@ -2680,11 +2707,13 @@ function loadCfgEmail(){
   checkCfgEmailVersion();
   const tdg = localStorage.getItem(getCfgKey('tdg')) || CFG_EMAIL_BASE_TDG;
   const liv = localStorage.getItem(getCfgKey('liv')) || CFG_EMAIL_BASE_LIV;
+  const olb = localStorage.getItem(getCfgKey('olb')) || CFG_EMAIL_BASE_OLB;
   const firma = localStorage.getItem(getCfgKey('firma')) || (currentUser||'');
   const ccRaw = localStorage.getItem(getCfgKey('cc')) || getCcDefault();
   const cc = ccRaw.split(/[;,]+/).map(s=>s.trim()).filter(Boolean).join(';');
   document.getElementById('cfg-body-tdg').value = tdg;
   document.getElementById('cfg-body-liv').value = liv;
+  document.getElementById('cfg-body-olb').value = olb;
   document.getElementById('cfg-firma').value = firma;
   document.getElementById('cfg-cc').value = cc;
 }
@@ -2692,6 +2721,7 @@ function loadCfgEmail(){
 function salvaCfgEmail(){
   localStorage.setItem(getCfgKey('tdg'), document.getElementById('cfg-body-tdg').value);
   localStorage.setItem(getCfgKey('liv'), document.getElementById('cfg-body-liv').value);
+  localStorage.setItem(getCfgKey('olb'), document.getElementById('cfg-body-olb').value);
   localStorage.setItem(getCfgKey('firma'), document.getElementById('cfg-firma').value);
   localStorage.setItem(getCfgKey('cc'), document.getElementById('cfg-cc').value);
   toast('✅ Configurazione email salvata');
@@ -2701,6 +2731,7 @@ function resetCfgEmail(){
   if(!confirm('Ripristinare i testi base? Le tue modifiche andranno perse.')) return;
   document.getElementById('cfg-body-tdg').value = CFG_EMAIL_BASE_TDG;
   document.getElementById('cfg-body-liv').value = CFG_EMAIL_BASE_LIV;
+  document.getElementById('cfg-body-olb').value = CFG_EMAIL_BASE_OLB;
   document.getElementById('cfg-firma').value = currentUser||'';
   document.getElementById('cfg-cc').value = getCcDefault();
   salvaCfgEmail();
@@ -2721,12 +2752,15 @@ async function inviaEmailMarittimo(id){
   const s = _sessioni.find(x => x.id === p.sessione_id);
   if(!s) return;
 
-  // Determina luogo: TDG o Livorno
+  // Determina luogo: TDG, Olbia o Livorno (default)
   const luogo = (s.Luogo||'').toLowerCase();
   const isTdg = luogo.includes('greco') || luogo.includes('torre');
+  const isOlbia = luogo.includes('olbia');
   const bodyTemplate = isTdg
     ? (localStorage.getItem(getCfgKey('tdg')) || CFG_EMAIL_BASE_TDG)
-    : (localStorage.getItem(getCfgKey('liv')) || CFG_EMAIL_BASE_LIV);
+    : isOlbia
+      ? (localStorage.getItem(getCfgKey('olb')) || CFG_EMAIL_BASE_OLB)
+      : (localStorage.getItem(getCfgKey('liv')) || CFG_EMAIL_BASE_LIV);
   const firma = localStorage.getItem(getCfgKey('firma')) || currentUser || '';
 
   // Sostituisce variabili — nome con maiuscole iniziali (es. Mario Rossi)
